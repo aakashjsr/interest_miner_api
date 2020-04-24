@@ -9,14 +9,6 @@ class UserSerializer(serializers.ModelSerializer):
     keyword_count = serializers.SerializerMethodField()
     similarity_score = serializers.SerializerMethodField()
 
-    def get_similarity_score(self, instance):
-        from interests.utils import get_interest_similarity_scope
-        # return get_interest_similarity_scope(
-        #     list(instance.long_term_interests.values_list("keyword__name", flat=True)),
-        #     list(self.context["request"].user.long_term_interests.values_list("keyword__name", flat=True)),
-        # )
-        return 0
-
     def get_keyword_count(self, instance):
         return ShortTermInterest.objects.filter(user=instance).count()
 

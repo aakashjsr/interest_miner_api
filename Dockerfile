@@ -21,7 +21,6 @@ EXPOSE 80
 
 COPY nginx_default.conf /etc/nginx/nginx.conf
 
-RUN wget https://aakash-etl.s3-us-west-2.amazonaws.com/datatest_word2vec.zip -O /tmp/datatest_word2vec.zip
-RUN unzip /tmp/datatest_word2vec.zip
-COPY /tmp/datatest_word2vec.txt /opt/
+ADD https://aakash-etl.s3-us-west-2.amazonaws.com/datatest_word2vec.zip /opt/
+RUN unzip /opt/datatest_word2vec.zip -d /opt
 CMD bash start.sh
