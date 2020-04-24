@@ -13,7 +13,7 @@ if [ "$BACKGROUND_ENV" = "web" ]; then
     nginx
 
     echo "Starting Gunicorn"
-    gunicorn interest_miner_api.wsgi:application -b 0.0.0.0:8000 --log-level info --timeout 600
+    gunicorn --timeout 600 interest_miner_api.wsgi:application -b 0.0.0.0:8000 --log-level info
 
 elif [ "$BACKGROUND_ENV" = "worker" ]; then
     echo "Starting Worker.."
