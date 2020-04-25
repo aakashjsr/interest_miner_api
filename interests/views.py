@@ -129,5 +129,9 @@ class SimilarityView(RetrieveAPIView):
         user = self.get_object()
         keywords_1 = list(user.long_term_interests.values_list("keyword__name", flat=True))
         keywords_2 = list(request.user.long_term_interests.values_list("keyword__name", flat=True))
-        score = get_interest_similarity_score(keywords_1, keywords_2)
+        score = 'N/A'
+        if len(keywords_1) and len(keywords_2):
+            score = get_interest_similarity_score(keywords_1, keywords_2)
+            if score is None:
+                score = 'N/A'
         return Response({"score": score})
