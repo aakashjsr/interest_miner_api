@@ -75,7 +75,7 @@ class UserKeywordView(ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         for keyword in serializer.validated_data["keywords"]:
-            obj, _ = Keyword.objects.get_or_create(name=keyword)
+            obj, _ = Keyword.objects.get_or_create(name=keyword.lower())
             ShortTermInterest.objects.update_or_create(
                 user=request.user, keyword=obj, source=ShortTermInterest.MANUAL
             )
@@ -92,7 +92,7 @@ class UserBlacklistedKeywordView(ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         for keyword in serializer.validated_data["keywords"]:
-            obj, _ = Keyword.objects.get_or_create(name=keyword)
+            obj, _ = Keyword.objects.get_or_create(name=keyword.lower())
             BlacklistedKeyword.objects.update_or_create(
                 user=request.user, keyword=obj
             )
@@ -112,8 +112,8 @@ class StreamGraphView(APIView):
     def get(self, request, *args, **kwargs):
         # get top 10 keywords
         today = datetime.date.today()
-        response_data = {}
-        for index in range(6):
+        response_data = OrderedDict()
+        for index in range(5,-1,-1):
             date = today - monthdelta.monthdelta(months=index)
             response_data[date.strftime("%B %Y")] = list(
                 InterestTrend.objects.filter(month=date.month, year=date.year, user=request.user).order_by("-weight").values("keyword__name", "weight")[:10]

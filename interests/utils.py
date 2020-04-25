@@ -20,7 +20,7 @@ def generate_long_term_model(user_id):
 
     for keyword, weight in new_data.items():
         print(keyword, weight)
-        keyword_instance, created = Keyword.objects.get_or_create(name=keyword)
+        keyword_instance, created = Keyword.objects.get_or_create(name=keyword.lower())
         if created:
             print("getting wiki categories")
             categories = wikicategory(keyword)
@@ -58,7 +58,7 @@ def generate_short_term_model(user_id, source):
         if keyword in blacklisted_keywords:
             print("Skipping {} as its blacklisted".format(keyword))
             continue
-        keyword_instance, created = Keyword.objects.get_or_create(name=keyword)
+        keyword_instance, created = Keyword.objects.get_or_create(name=keyword.lower())
         if created:
             print("getting wiki categories")
             categories = wikicategory(keyword)
