@@ -134,4 +134,6 @@ class SimilarityView(RetrieveAPIView):
             score = get_interest_similarity_score(keywords_1, keywords_2)
             if score is None:
                 score = 'N/A'
+            else:
+                score = round(float(score), 2)
         return Response({"score": score})
