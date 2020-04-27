@@ -3,7 +3,7 @@ import datetime
 from interests.models import Tweet, Paper, Keyword, ShortTermInterest, LongTermInterest, Category, BlacklistedKeyword, InterestTrend
 from interests.Keyword_Extractor.extractor import getKeyword
 from interests.wikipedia_utils import wikicategory, wikifilter
-from interests.update_interests import update_interest_models
+from interests.update_interests import update_interest_models, normalize
 
 from interests.Semantic_Similarity.Word_Embedding.IMsim import calculate_similarity
 
@@ -59,9 +59,13 @@ def generate_short_term_model(user_id, source):
 
     print("Found {} keyword".format(len(keywords.keys())))
     print("Applying wiki filter")
-    keywords = wikifilter(keywords)[1]
+    wiki_keyword_redirect_mapping, keyword_weight_mapping = wikifilter(keywords)
+
+    keywords = normalize(keyword_weight_mapping)
+
     print("Filtered down keyword to {}".format(len(keywords.keys())))
     for keyword, weight in keywords.items():
+        keyword = wiki_keyword_redirect_mapping.get(keyword, keyword)
         keyword = keyword.lower()
         print(keyword, weight)
         if keyword in blacklisted_keywords:
