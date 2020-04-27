@@ -155,7 +155,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
-TWITTER_FETCH_DAYS = int(os.environ.get("TWITTER_FETCH_DAYS", 90)) # No of days for which the tweets needs to be imported
+TWITTER_FETCH_DAYS = int(os.environ.get("TWITTER_FETCH_DAYS", 180)) # No of days for which the tweets needs to be imported
 
 # Celery settings
 REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")

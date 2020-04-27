@@ -38,7 +38,7 @@ def generate_long_term_model(user_id):
         if source == ShortTermInterest.TWITTER:
             attrs["tweet"] = Tweet.objects.filter(full_text__icontains=keyword).order_by("-created_at").first()
         elif source == ShortTermInterest.SCHOLAR:
-            attrs["paper"] = Paper.objects.filter(abstract__icontains=keyword).order_by("-created_at").first()
+            attrs["paper"] = Paper.objects.filter(abstract__icontains=keyword).order_by("-created_on").first()
 
         LongTermInterest.objects.create(**attrs)
 
@@ -82,7 +82,7 @@ def generate_short_term_model(user_id, source):
         if source == ShortTermInterest.TWITTER:
             defaults["tweet"] = Tweet.objects.filter(full_text__icontains=keyword).order_by("-created_at").first()
         elif source == ShortTermInterest.SCHOLAR:
-            defaults["paper"] = Paper.objects.filter(abstract__icontains=keyword).order_by("-created_at").first()
+            defaults["paper"] = Paper.objects.filter(abstract__icontains=keyword).order_by("-created_on").first()
         ShortTermInterest.objects.update_or_create(user_id=user_id, keyword=keyword_instance, defaults=defaults)
 
 
