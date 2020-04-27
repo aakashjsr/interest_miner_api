@@ -15,7 +15,7 @@ class LongTermInterestView(ListAPIView):
 
     def get_queryset(self):
         order_key = "created_on" if self.request.GET.get("order") == "date" else "-weight"
-        return self.request.user.long_term_interests.all().order_by(order_key)[:10]
+        return self.request.user.long_term_interests.all().order_by(order_key)[:15]
 
 
 class ShortTermInterestView(ListAPIView):
@@ -23,7 +23,7 @@ class ShortTermInterestView(ListAPIView):
 
     def get_queryset(self):
         order_key = "created_on" if self.request.GET.get("order") == "date" else "-weight"
-        return self.request.user.short_term_interests.all().order_by(order_key)[:10]
+        return self.request.user.short_term_interests.all().order_by(order_key)[:5]
 
 
 class ActivityStatsView(APIView):

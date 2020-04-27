@@ -44,7 +44,7 @@ def generate_short_term_model(user_id, source):
 
     print("Generating short term model from {}".format(source))
     for item in cls.objects.filter(user_id=user_id, used_in_calc=False):
-        keywords.update(getKeyword(getattr(item, text_attribute) or "", model=extraction_model, num=5))
+        keywords.update(getKeyword(getattr(item, text_attribute) or "", model=extraction_model, num=20))
         item.used_in_calc = True
         item.save()
 
