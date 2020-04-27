@@ -35,6 +35,16 @@ class BlacklistedKeywordSerializer(serializers.ModelSerializer):
 class ShortTermInterestSerializer(serializers.ModelSerializer):
     keyword = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
+    paper_db_id = serializers.SerializerMethodField()
+    tweet_id = serializers.SerializerMethodField()
+
+    def get_tweet_id(self, instance):
+        if instance.tweet:
+            return instance.tweet.id_str
+
+    def get_paper_db_id(self, instance):
+        if instance.paper:
+            return instance.paper_id
 
     def get_categories(self, instance):
         return CategorySerializer(instance.keyword.categories.all(), many=True).data
@@ -50,6 +60,16 @@ class ShortTermInterestSerializer(serializers.ModelSerializer):
 class LongTermInterestSerializer(serializers.ModelSerializer):
     keyword = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
+    paper_db_id = serializers.SerializerMethodField()
+    tweet_id = serializers.SerializerMethodField()
+
+    def get_tweet_id(self, instance):
+        if instance.tweet:
+            return instance.tweet.id_str
+
+    def get_paper_db_id(self, instance):
+        if instance.paper:
+            return instance.paper_id
 
     def get_categories(self, instance):
         return CategorySerializer(instance.keyword.categories.all(), many=True).data

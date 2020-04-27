@@ -31,7 +31,16 @@ def generate_long_term_model(user_id):
         else:
             print("Keyword found in db")
         print("keyword obtained")
-        LongTermInterest.objects.create(user_id=user_id, keyword=keyword_instance, weight=weight, source=keyword_source_map.get(keyword, ""))
+
+        source = keyword_source_map.get(keyword, "")
+        attrs = {"source": source, "user_id": user_id, "keyword": keyword_instance, "weight": weight}
+
+        if source == ShortTermInterest.TWITTER:
+            attrs["tweet"] = Tweet.objects.filter(full_text__icontains=keyword).order_by("-created_at").first()
+        elif source == ShortTermInterest.SCHOLAR:
+            attrs["paper"] = Paper.objects.filter(abstract__icontains=keyword).order_by("-created_at").first()
+
+        LongTermInterest.objects.create(**attrs)
 
 
 def generate_short_term_model(user_id, source):
@@ -69,10 +78,12 @@ def generate_short_term_model(user_id, source):
         else:
             print("Keyword found in db")
         print("keyword obtained")
-        ShortTermInterest.objects.update_or_create(user_id=user_id, keyword=keyword_instance, defaults={
-            "source": source,
-            "weight": weight
-        })
+        defaults = {"source": source, "weight": weight}
+        if source == ShortTermInterest.TWITTER:
+            defaults["tweet"] = Tweet.objects.filter(full_text__icontains=keyword).order_by("-created_at").first()
+        elif source == ShortTermInterest.SCHOLAR:
+            defaults["paper"] = Paper.objects.filter(abstract__icontains=keyword).order_by("-created_at").first()
+        ShortTermInterest.objects.update_or_create(user_id=user_id, keyword=keyword_instance, defaults=defaults)
 
 
 def capture_interest_trend(user_id):
