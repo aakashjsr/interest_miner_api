@@ -6,7 +6,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.response import Response
 
 from .serializers import PaperSerializer, ListDataSerializer, BlacklistedKeywordSerializer, ShortTermInterestSerializer, LongTermInterestSerializer
-from .models import Keyword, BlacklistedKeyword, ShortTermInterest, Paper, Tweet, LongTermInterest, InterestTrend
+from .models import Keyword, BlacklistedKeyword, ShortTermInterest, Paper, Tweet, LongTermInterest
 from accounts.models import User
 from .utils import get_interest_similarity_score
 
@@ -23,7 +23,8 @@ class ShortTermInterestView(ListAPIView):
 
     def get_queryset(self):
         order_key = "created_on" if self.request.GET.get("order") == "date" else "-weight"
-        return self.request.user.short_term_interests.all().order_by(order_key)[:5]
+        today = datetime.date.today()
+        return self.request.user.short_term_interests.filter(model_month=today.month, model_year=today.year).order_by(order_key)[:5]
 
 
 class ActivityStatsView(APIView):
@@ -115,9 +116,7 @@ class StreamGraphView(APIView):
         response_data = OrderedDict()
         for index in range(5,-1,-1):
             date = today - monthdelta.monthdelta(months=index)
-            response_data[date.strftime("%B %Y")] = list(
-                InterestTrend.objects.filter(month=date.month, year=date.year, user=request.user).order_by("-weight").values("keyword__name", "weight")[:10]
-            )
+            response_data[date.strftime("%B %Y")] = list()
         return Response(response_data)
 
 

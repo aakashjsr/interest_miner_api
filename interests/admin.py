@@ -27,13 +27,6 @@ class TweetAdmin(admin.ModelAdmin):
         model = Tweet
 
 
-class InterestTrendAdmin(admin.ModelAdmin):
-    list_display = ("keyword", "user", "month", "year")
-    list_filter = ("user", )
-    class Meta:
-        model = InterestTrend
-
-
 class ShortTermInterestAdmin(admin.ModelAdmin):
     list_display = ("keyword", "user", "weight", "created_on")
     list_filter = ("user", )
@@ -54,4 +47,3 @@ admin.site.register(Tweet, TweetAdmin)
 admin.site.register(Category)
 admin.site.register(BlacklistedKeyword, BlacklistedKeywordAdmin)
 admin.site.register(Keyword, KeywordAdmin)
-admin.site.register(InterestTrend, InterestTrendAdmin)

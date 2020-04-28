@@ -60,8 +60,12 @@ class ShortTermInterest(models.Model):
     weight = models.FloatField(default=1)
     source = models.CharField(max_length=512, choices=[(TWITTER, TWITTER), (SCHOLAR, SCHOLAR), (MANUAL, MANUAL)], default=MANUAL)
     user = models.ForeignKey(User, related_name="short_term_interests", on_delete=models.CASCADE)
-    tweet = models.ForeignKey(Tweet, related_name="tweet_short_term_models", null=True, blank=True, on_delete=models.CASCADE)
-    paper = models.ForeignKey(Paper, related_name="paper_short_term_models", null=True, blank=True, on_delete=models.CASCADE)
+    tweets = models.ManyToManyField(Tweet, related_name="tweet_short_term_models")
+    papers = models.ManyToManyField(Paper, related_name="paper_short_term_models")
+
+    model_month = models.IntegerField()
+    model_year = models.IntegerField()
+    used_in_calc = models.BooleanField(default=False)
 
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -76,8 +80,8 @@ class LongTermInterest(models.Model):
     weight = models.FloatField(default=1)
     source = models.CharField(max_length=512, choices=[(TWITTER, TWITTER), (SCHOLAR, SCHOLAR), (MANUAL, MANUAL)], default=MANUAL)
     user = models.ForeignKey(User, related_name="long_term_interests", on_delete=models.CASCADE)
-    tweet = models.ForeignKey(Tweet, related_name="tweet_long_term_models", null=True, blank=True, on_delete=models.CASCADE)
-    paper = models.ForeignKey(Paper, related_name="paper_long_term_models", null=True, blank=True, on_delete=models.CASCADE)
+    tweets = models.ManyToManyField(Tweet, related_name="tweet_long_term_models")
+    papers = models.ManyToManyField(Paper, related_name="paper_long_term_models")
 
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -86,18 +90,6 @@ class LongTermInterest(models.Model):
 class BlacklistedKeyword(models.Model):
     keyword = models.ForeignKey(Keyword, related_name="blacklisted_preference", on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name="blacklisted_keywords", on_delete=models.CASCADE)
-
-    updated_on = models.DateTimeField(auto_now=True)
-    created_on = models.DateTimeField(auto_now_add=True)
-
-
-
-class InterestTrend(models.Model):
-    keyword = models.ForeignKey(Keyword, related_name="tends", on_delete=models.CASCADE)
-    user = models.ForeignKey(User, related_name="trends", on_delete=models.CASCADE)
-    month = models.IntegerField()
-    year = models.IntegerField()
-    weight = models.FloatField(default=1)
 
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)

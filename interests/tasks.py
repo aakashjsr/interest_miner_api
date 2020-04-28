@@ -6,7 +6,7 @@ from dateutil import parser
 from django.conf import settings
 from accounts.models import User
 from interests.models import Tweet, Paper, ShortTermInterest
-from .utils import generate_long_term_model, generate_short_term_model, capture_interest_trend
+from .utils import generate_long_term_model, generate_short_term_model
 
 from celery.decorators import task
 from common.config import BaseCeleryTask
@@ -123,9 +123,7 @@ def update_short_term_interest_model():
 @task(name="update_long_term_interest_model", base=BaseCeleryTask, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
 def update_long_term_interest_model():
     for user in User.objects.all():
-        capture_interest_trend(user.id)
         generate_long_term_model(user.id)
-        capture_interest_trend(user.id)
 
 
 @task(name="update_short_term_interest_model_for_user", base=BaseCeleryTask, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
@@ -139,6 +137,4 @@ def update_short_term_interest_model_for_user(user_id):
 
 @task(name="update_long_term_interest_model_for_user", base=BaseCeleryTask, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
 def update_long_term_interest_model_for_user(user_id):
-    capture_interest_trend(user_id)
     generate_long_term_model(user_id)
-    capture_interest_trend(user_id)
