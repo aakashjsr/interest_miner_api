@@ -78,7 +78,7 @@ class LongTermInterest(models.Model):
 
     keyword = models.ForeignKey(Keyword, related_name="long_term_models", on_delete=models.CASCADE)
     weight = models.FloatField(default=1)
-    source = models.CharField(max_length=512, choices=[(TWITTER, TWITTER), (SCHOLAR, SCHOLAR), (MANUAL, MANUAL)], default=MANUAL)
+    source = models.CharField(max_length=512, default=MANUAL)
     user = models.ForeignKey(User, related_name="long_term_interests", on_delete=models.CASCADE)
     tweets = models.ManyToManyField(Tweet, related_name="tweet_long_term_models")
     papers = models.ManyToManyField(Paper, related_name="paper_long_term_models")

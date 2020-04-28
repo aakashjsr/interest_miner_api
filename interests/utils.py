@@ -42,6 +42,8 @@ def generate_long_term_model(user_id):
         if paper_list:
             long_term_model.papers.add(*paper_list)
             long_term_model.source = ShortTermInterest.SCHOLAR
+        if tweet_list and paper_list:
+            long_term_model.source = f"{ShortTermInterest.SCHOLAR} & {ShortTermInterest.TWITTER}"
         long_term_model.save()
 
 
