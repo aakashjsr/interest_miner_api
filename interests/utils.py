@@ -49,7 +49,12 @@ def generate_short_term_model(user_id, source):
     if source == ShortTermInterest.TWITTER:
         for tweet in Tweet.objects.filter(user_id=user_id, used_in_calc=False):
             print(f"Extracting keywords from tweet id {tweet.id}")
-            keywords = getKeyword(tweet.full_text or "", model="Yake", num=20)
+            try:
+                keywords = getKeyword(tweet.full_text or "", model="Yake", num=20)
+            except:
+                #silencing errors like
+                # interests/Keyword_Extractor/utils/datarepresentation.py:106: RuntimeWarning: Mean of empty slice
+                continue
             print(f"got keywords {keywords}")
             if not len(keywords.keys()):
                 print("No keywords found")
@@ -86,7 +91,12 @@ def generate_short_term_model(user_id, source):
     if source == ShortTermInterest.SCHOLAR:
         for paper in Paper.objects.filter(user_id=user_id, used_in_calc=False):
             print(f"Extracting keywords from paper id {paper.id}")
-            keywords = getKeyword(paper.abstract or "", model="SingleRank", num=20)
+            try:
+                keywords = getKeyword(paper.abstract or "", model="SingleRank", num=20)
+            except:
+                #silencing errors like
+                # interests/Keyword_Extractor/utils/datarepresentation.py:106: RuntimeWarning: Mean of empty slice
+                continue
             print(f"got keywords {keywords}")
             if not len(keywords.keys()):
                 print("No keywords found")

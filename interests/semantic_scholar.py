@@ -34,11 +34,6 @@ class SemanticScholarAPI:
         return data
 
 
-    @retry(
-        retry_on_exception=lambda x: isinstance(x, ConnectionRefusedError),
-        stop_max_attempt_number=3,
-        wait_fixed=2000
-    )
     def __get_data(self, method, id, include_unknown_references=False) -> dict:
         '''Get data from Semantic Scholar API
 

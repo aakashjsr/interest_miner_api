@@ -40,7 +40,7 @@ def import_tweets():
         print("Tweets import completed for {}".format(user.username))
 
 
-@task(name="import_papers", base=BaseCeleryTask, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
+@task(name="import_papers", base=BaseCeleryTask, autoretry_for=(ConnectionRefusedError,), retry_kwargs={'max_retries': 5, 'countdown': 20*60})
 def import_papers():
     for user in User.objects.exclude(author_id=None):
         current_year = datetime.datetime.now().year
