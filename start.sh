@@ -1,9 +1,6 @@
 echo "Waiting for 5 seconds.."
     sleep 5
 
-echo "Migrating Database"
-    python manage.py migrate
-
 if [ "$BACKGROUND_ENV" = "web" ]; then
     echo "Starting web.."
     echo "Collect static files"
@@ -16,6 +13,8 @@ if [ "$BACKGROUND_ENV" = "web" ]; then
     gunicorn --timeout 600 interest_miner_api.wsgi:application -b 0.0.0.0:8000 --log-level info
 
 elif [ "$BACKGROUND_ENV" = "worker" ]; then
+    echo "Migrating Database"
+    python manage.py migrate
     echo "Starting Worker.."
     celery --pidfile=/opt/celeryd.pid worker --app=interest_miner_api -l info
 

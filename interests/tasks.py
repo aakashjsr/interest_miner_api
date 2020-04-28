@@ -47,6 +47,8 @@ def import_papers():
         api = SemanticScholarAPI()
 
         papers = api.get_user_papers(user, current_year-5, current_year)
+        if not papers:
+            continue
 
         for item in papers:
             Paper.objects.update_or_create(

@@ -38,12 +38,12 @@ class ShortTermInterestSerializer(serializers.ModelSerializer):
     paper_db_ids = serializers.SerializerMethodField()
     tweet_ids = serializers.SerializerMethodField()
 
-    def get_tweet_id(self, instance):
+    def get_tweet_ids(self, instance):
         if instance.tweets.count():
             return [tweet.id_str for tweet in instance.tweets.all()]
         return []
 
-    def get_paper_db_id(self, instance):
+    def get_paper_db_ids(self, instance):
         return list(instance.papers.values_list("id", flat=True))
 
     def get_categories(self, instance):
@@ -60,16 +60,16 @@ class ShortTermInterestSerializer(serializers.ModelSerializer):
 class LongTermInterestSerializer(serializers.ModelSerializer):
     keyword = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
-    paper_db_id = serializers.SerializerMethodField()
-    tweet_id = serializers.SerializerMethodField()
+    paper_db_ids = serializers.SerializerMethodField()
+    tweet_ids = serializers.SerializerMethodField()
 
-    def get_tweet_id(self, instance):
-        if instance.tweet:
-            return instance.tweet.id_str
+    def get_tweet_ids(self, instance):
+        if instance.tweets.count():
+            return [tweet.id_str for tweet in instance.tweets.all()]
+        return []
 
-    def get_paper_db_id(self, instance):
-        if instance.paper:
-            return instance.paper_id
+    def get_paper_db_ids(self, instance):
+        return list(instance.papers.values_list("id", flat=True))
 
     def get_categories(self, instance):
         return CategorySerializer(instance.keyword.categories.all(), many=True).data
