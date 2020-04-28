@@ -38,8 +38,11 @@ def generate_long_term_model(user_id):
         paper_list = [paper for paper in Paper.objects.filter(user_id=user_id, abstract__icontains=keyword.lower())]
         if tweet_list:
             long_term_model.tweets.add(*tweet_list)
+            long_term_model.source = ShortTermInterest.TWITTER
         if paper_list:
             long_term_model.papers.add(*paper_list)
+            long_term_model.source = ShortTermInterest.SCHOLAR
+        long_term_model.save()
 
 
 def generate_short_term_model(user_id, source):

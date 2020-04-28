@@ -62,7 +62,7 @@ class LongTermInterestSerializer(serializers.ModelSerializer):
     categories = serializers.SerializerMethodField()
     tweet_ids = serializers.SerializerMethodField()
     papers = PaperSerializer(many=True)
-    
+
 
     def get_tweet_ids(self, instance):
         if instance.tweets.count():
