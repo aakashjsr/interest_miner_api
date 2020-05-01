@@ -106,18 +106,29 @@ class StreamGraphView(APIView):
         scholar_data = OrderedDict()
         today = datetime.date.today()
 
+        top_twitter_keywords = list(
+            ShortTermInterest.objects.filter(user=request.user, source=ShortTermInterest.TWITTER).order_by(
+                "-weight").values_list("keyword__name", flat=True))
+        top_twitter_keywords = list(set(top_twitter_keywords))[:10]
+
+        top_paper_keywords = list(
+            ShortTermInterest.objects.filter(user=request.user, source=ShortTermInterest.SCHOLAR).order_by(
+                "-weight").values_list("keyword__name", flat=True))
+        top_paper_keywords = list(set(top_paper_keywords))[:10]
+
+
         for index in range(5,-1,-1):
             # data for last 6 months
             date = today - monthdelta.monthdelta(months=index)
             twitter_data[date.strftime("%B %Y")] = list(
-                ShortTermInterest.objects.filter(model_month=date.month, model_year=date.year, user=request.user, source=ShortTermInterest.TWITTER).order_by("-weight").values("keyword__name", "weight")[:10]
+                ShortTermInterest.objects.filter(model_month=date.month, model_year=date.year, user=request.user, source=ShortTermInterest.TWITTER, keyword__name__in=top_twitter_keywords).values("keyword__name", "weight")
             )
 
         for index in range(4,-1,-1):
             # data for last 5 years
             year = today.year - index
             scholar_data[str(year)] = list(
-                ShortTermInterest.objects.filter(model_year=year, user=request.user, source=ShortTermInterest.SCHOLAR).order_by("-weight").values("keyword__name", "weight")[:10]
+                ShortTermInterest.objects.filter(model_year=year, user=request.user, source=ShortTermInterest.SCHOLAR, keyword__name__in=top_paper_keywords).values("keyword__name", "weight")
             )
         response_data = {"twitter_data": twitter_data, "paper_data": scholar_data}
         return Response(response_data)
