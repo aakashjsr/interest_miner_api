@@ -5,11 +5,7 @@ from gensim.scripts.glove2word2vec import glove2word2vec
 from gensim.models.wrappers import FastText
 from nltk.corpus import stopwords
 from django.conf import settings
-
-
-print("Loading glove model..")
-glove_model = KeyedVectors.load_word2vec_format("/opt/datatest_word2vec.txt")
-print("glove model loaded!")
+from .data_models import glove_model
 
 def calculate_similarity(source_doc, target_doc, embedding="Glove", threshold=0):
     """Calculates & returns similarity scores between given source document & all the target documents."""

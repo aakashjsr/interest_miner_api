@@ -166,3 +166,6 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERYD_TASK_SOFT_TIME_LIMIT = 60 * 60  # 1 hour timeout
+
+# preload data models
+from interests.Semantic_Similarity.Word_Embedding.data_models import glove_model
