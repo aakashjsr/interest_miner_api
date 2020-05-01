@@ -7,6 +7,10 @@ from nltk.corpus import stopwords
 from django.conf import settings
 
 
+print("Loading glove model..")
+glove_model = KeyedVectors.load_word2vec_format("/opt/datatest_word2vec.txt")
+print("glove model loaded!")
+
 def calculate_similarity(source_doc, target_doc, embedding="Glove", threshold=0):
     """Calculates & returns similarity scores between given source document & all the target documents."""
 
@@ -89,7 +93,6 @@ def calculate_similarity(source_doc, target_doc, embedding="Glove", threshold=0)
             return sim_score
 
     elif embedding == "Glove":
-        glove_model = KeyedVectors.load_word2vec_format("/opt/datatest_word2vec.txt")
         source_vec = glove_vectorize(source_doc)
         target_vec = glove_vectorize(target_doc)
         sim_score = cosine_sim(source_vec, target_vec)
