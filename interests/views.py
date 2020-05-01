@@ -116,7 +116,7 @@ class StreamGraphView(APIView):
         for index in range(4,-1,-1):
             # data for last 5 years
             year = today.year - index
-            scholar_data[date.strftime("%Y")] = list(
+            scholar_data[str(year)] = list(
                 ShortTermInterest.objects.filter(model_year=year, user=request.user, source=ShortTermInterest.SCHOLAR).order_by("-weight").values("keyword__name", "weight")[:10]
             )
         response_data = {"twitter_data": twitter_data, "paper_data": scholar_data}
