@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from gensim.models.keyedvectors import KeyedVectors
 from gensim.test.utils import datapath, get_tmpfile
@@ -5,7 +6,10 @@ from gensim.scripts.glove2word2vec import glove2word2vec
 from gensim.models.wrappers import FastText
 from nltk.corpus import stopwords
 from django.conf import settings
-from .data_models import glove_model
+
+if os.environ.get("BACKGROUND_ENV") == "web":
+    from interests.Semantic_Similarity.Word_Embedding.data_models import glove_model
+
 
 def calculate_similarity(source_doc, target_doc, embedding="Glove", threshold=0):
     """Calculates & returns similarity scores between given source document & all the target documents."""
