@@ -16,7 +16,7 @@ class LongTermInterestView(ListCreateAPIView):
 
     def get_queryset(self):
         order_key = "created_on" if self.request.GET.get("order") == "date" else "-weight"
-        return self.request.user.long_term_interests.all().order_by(order_key)[:15]
+        return self.request.user.long_term_interests.all().order_by(order_key)
 
     def post(self, request, *args, **kwargs):
         serializer = ListDataSerializer(data=request.data)
@@ -35,8 +35,7 @@ class LongTermInterestItemView(RetrieveUpdateDestroyAPIView):
     serializer_class = LongTermInterestSerializer
 
     def get_queryset(self):
-        order_key = "created_on" if self.request.GET.get("order") == "date" else "-weight"
-        return self.request.user.long_term_interests.all().order_by(order_key)[:15]
+        return self.request.user.long_term_interests.all()
 
     def delete(self, request, *args, **kwargs):
         item = self.get_object()
