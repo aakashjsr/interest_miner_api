@@ -37,12 +37,10 @@ class LongTermInterestItemView(RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return self.request.user.long_term_interests.all()
 
-    def delete(self, request, *args, **kwargs):
-        item = self.get_object()
-        BlacklistedKeyword.objects.update_or_create(user=request.user, keyword=item.keyword)
-        ShortTermInterest.objects.filter(keyword=item.keyword, user=request.user).delete()
-        LongTermInterest.objects.filter(keyword=item.keyword, user=request.user).delete()
-        return Response({}, status=status.HTTP_204_NO_CONTENT)
+    def perform_destroy(self, instance):
+        BlacklistedKeyword.objects.update_or_create(user=self.request.user, keyword=instance.keyword)
+        ShortTermInterest.objects.filter(keyword=instance.keyword, user=self.request.user).delete()
+        return super().perform_destroy(instance)
 
 
 class ShortTermInterestView(ListAPIView):
