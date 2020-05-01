@@ -110,14 +110,14 @@ class StreamGraphView(APIView):
             # data for last 6 months
             date = today - monthdelta.monthdelta(months=index)
             twitter_data[date.strftime("%B %Y")] = list(
-                ShortTermInterest.objects.filter(month=date.month, year=date.year, user=request.user, source=ShortTermInterest.TWITTER).order_by("-weight").values("keyword__name", "weight")[:10]
+                ShortTermInterest.objects.filter(model_month=date.month, model_year=date.year, user=request.user, source=ShortTermInterest.TWITTER).order_by("-weight").values("keyword__name", "weight")[:10]
             )
 
         for index in range(4,-1,-1):
             # data for last 5 years
             year = today.year - index
             scholar_data[date.strftime("%Y")] = list(
-                ShortTermInterest.objects.filter(year=year, user=request.user, source=ShortTermInterest.SCHOLAR).order_by("-weight").values("keyword__name", "weight")[:10]
+                ShortTermInterest.objects.filter(model_year=year, user=request.user, source=ShortTermInterest.SCHOLAR).order_by("-weight").values("keyword__name", "weight")[:10]
             )
         response_data = {"twitter_data": twitter_data, "paper_data": scholar_data}
         return Response(response_data)
