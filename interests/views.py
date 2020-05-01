@@ -4,18 +4,46 @@ from collections import OrderedDict
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
+from rest_framework import status
 
 from .serializers import PaperSerializer, ListDataSerializer, BlacklistedKeywordSerializer, ShortTermInterestSerializer, LongTermInterestSerializer
 from .models import Keyword, BlacklistedKeyword, ShortTermInterest, Paper, Tweet, LongTermInterest
 from accounts.models import User
 from .utils import get_interest_similarity_score
 
-class LongTermInterestView(ListAPIView):
+class LongTermInterestView(ListCreateAPIView):
     serializer_class = LongTermInterestSerializer
 
     def get_queryset(self):
         order_key = "created_on" if self.request.GET.get("order") == "date" else "-weight"
         return self.request.user.long_term_interests.all().order_by(order_key)[:15]
+
+    def post(self, request, *args, **kwargs):
+        serializer = ListDataSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        for keyword in serializer.validated_data["keywords"]:
+            name, weight = keyword["name"], keyword["weight"]
+            keyword_obj, created = Keyword.objects.get_or_create(name=name.lower())
+            LongTermInterest.objects.update_or_create(
+                user=request.user, keyword=keyword_obj, defaults={"weight": weight}
+            )
+        return Response({})
+
+
+class LongTermInterestItemView(RetrieveUpdateDestroyAPIView):
+    serializer_class = LongTermInterestSerializer
+
+    def get_queryset(self):
+        order_key = "created_on" if self.request.GET.get("order") == "date" else "-weight"
+        return self.request.user.long_term_interests.all().order_by(order_key)[:15]
+
+    def delete(self, request, *args, **kwargs):
+        item = self.get_object()
+        BlacklistedKeyword.objects.update_or_create(user=request.user, keyword=item.keyword)
+        ShortTermInterest.objects.filter(keyword=item.keyword, user=request.user).delete()
+        LongTermInterest.objects.filter(keyword=item.keyword, user=request.user).delete()
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
 
 
 class ShortTermInterestView(ListAPIView):
@@ -63,43 +91,6 @@ class PaperItemView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return self.request.user.papers.all()
-
-
-class UserKeywordView(ListCreateAPIView):
-    serializer_class = ShortTermInterestSerializer
-
-    def get_queryset(self):
-        return self.request.user.short_term_interests.filter(source=ShortTermInterest.MANUAL).order_by("keyword__name")
-
-    def post(self, request, *args, **kwargs):
-        serializer = ListDataSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        for keyword in serializer.validated_data["keywords"]:
-            obj, _ = Keyword.objects.get_or_create(name=keyword.lower())
-            ShortTermInterest.objects.update_or_create(
-                user=request.user, keyword=obj, source=ShortTermInterest.MANUAL
-            )
-        return Response({})
-
-class UserBlacklistedKeywordView(ListCreateAPIView):
-    serializer_class = BlacklistedKeywordSerializer
-
-    def get_queryset(self):
-        return self.request.user.blacklisted_keywords.all().order_by("keyword__name")
-
-    def post(self, request, *args, **kwargs):
-        serializer = ListDataSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        for keyword in serializer.validated_data["keywords"]:
-            obj, _ = Keyword.objects.get_or_create(name=keyword.lower())
-            BlacklistedKeyword.objects.update_or_create(
-                user=request.user, keyword=obj
-            )
-            ShortTermInterest.objects.filter(keyword=obj).delete()
-            LongTermInterest.objects.filter(keyword=obj).delete()
-        return Response({})
 
 
 class UserBlacklistedKeywordItemView(DestroyAPIView):
