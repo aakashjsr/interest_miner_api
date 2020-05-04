@@ -82,7 +82,7 @@ class LongTermInterestSerializer(serializers.ModelSerializer):
 
 class KeywordCreateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=1000)
-    weight = serializers.IntegerField(max_value=5, min_value=1)
+    weight = serializers.FloatField(max_value=5, min_value=1)
 
 class ListDataSerializer(serializers.Serializer):
     keywords = KeywordCreateSerializer(many=True)

@@ -9,7 +9,7 @@ from django.db.models import Q
 from . import serializers as accounts_serializers
 from . import models as accounts_models
 
-from interests.tasks import  import_tweets_for_user, import_papers_for_user, update_short_term_interest_model_for_user
+from interests.tasks import  import_user_data
 
 
 class RegisterView(APIView):
@@ -24,10 +24,7 @@ class RegisterView(APIView):
         user = serializer.create(serializer.validated_data)
         user.set_password(serializer.validated_data["password"])
         user.save()
-        import_tweets_for_user.delay(user.id)
-        import_papers_for_user.delay(user.id)
-        # extract keywords
-        update_short_term_interest_model_for_user.s(user.id).apply_async(countdown=2 * 60)
+        import_user_data.delay(user.id)
         return Response(accounts_serializers.UserSerializer(instance=user).data)
 
 

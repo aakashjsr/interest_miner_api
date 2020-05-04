@@ -140,3 +140,18 @@ def update_short_term_interest_model_for_user(user_id):
 @task(name="update_long_term_interest_model_for_user", base=BaseCeleryTask, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
 def update_long_term_interest_model_for_user(user_id):
     generate_long_term_model(user_id)
+
+
+@task(name="import_user_data", base=BaseCeleryTask, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
+def import_user_data(user_id):
+    print("importing tweets")
+    import_tweets_for_user(user_id)
+
+    print("importing papers")
+    import_papers_for_user(user_id)
+
+    print("compute short term model")
+    update_short_term_interest_model_for_user(user_id)
+
+    print("compute long term model")
+    update_long_term_interest_model_for_user(user_id)
