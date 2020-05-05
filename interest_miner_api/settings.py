@@ -164,5 +164,5 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERYD_TASK_SOFT_TIME_LIMIT = 60 * 60  # 1 hour timeout
 
 # preload data models
-if bool(os.environ.get("PRELOAD_GLOVE_MODEL", False)):
+if bool(os.environ.get("PRELOAD_GLOVE_MODEL", False)) and os.environ.get("BACKGROUND_ENV") == "web":
     from interests.Semantic_Similarity.Word_Embedding.data_models import glove_model
