@@ -1,6 +1,7 @@
 import celery
 from .models import TaskLog
 
+
 class BaseCeleryTask(celery.Task):
     max_retries = 0
 

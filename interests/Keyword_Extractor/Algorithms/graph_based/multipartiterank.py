@@ -28,8 +28,6 @@ from interests.Keyword_Extractor.Algorithms.graph_based.topicrank import TopicRa
 
 
 class MultipartiteRank(TopicRank):
-
-
     def __init__(self):
         """Redefining initializer for MultipartiteRank.
         """
@@ -42,9 +40,7 @@ class MultipartiteRank(TopicRank):
         self.graph = nx.DiGraph()
         """ Redefine the graph as a directed graph. """
 
-    def topic_clustering(self,
-                         threshold=0.74,
-                         method='average'):
+    def topic_clustering(self, threshold=0.74, method='average'):
         """ Clustering candidates into topics.
 
             Args:
@@ -76,8 +72,13 @@ class MultipartiteRank(TopicRank):
 
         # for each cluster id
         for cluster_id in range(1, max(clusters) + 1):
-            self.topics.append([candidates[j] for j in range(len(clusters))
-                                if clusters[j] == cluster_id])
+            self.topics.append(
+                [
+                    candidates[j]
+                    for j in range(len(clusters))
+                    if clusters[j] == cluster_id
+                ]
+            )
 
         # assign cluster identifiers to candidates
         for i, cluster_id in enumerate(clusters):
@@ -111,7 +112,7 @@ class MultipartiteRank(TopicRank):
 
                     weights.append(1.0 / gap)
 
-            # add weighted edges 
+            # add weighted edges
             if weights:
                 # node_i -> node_j
                 self.graph.add_edge(node_i, node_j, weight=sum(weights))
@@ -163,12 +164,9 @@ class MultipartiteRank(TopicRank):
             node_i, node_j = nodes
             position_i = 1.0 / (1 + self.candidates[node_i].offsets[0])
             position_i = math.exp(position_i)
-            self.graph[node_j][node_i]['weight'] += (boosters * alpha * position_i)
+            self.graph[node_j][node_i]['weight'] += boosters * alpha * position_i
 
-    def candidate_weighting(self,
-                            threshold=0.74,
-                            method='average',
-                            alpha=1.1):
+    def candidate_weighting(self, threshold=0.74, method='average', alpha=1.1):
         """ Candidate weight calculation using random walk.
 
             Args:

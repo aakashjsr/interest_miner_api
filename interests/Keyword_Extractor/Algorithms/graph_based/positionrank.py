@@ -25,7 +25,6 @@ from collections import defaultdict
 
 
 class PositionRank(SingleRank):
-  
     def __init__(self):
         """Redefining initializer for PositionRank."""
 
@@ -34,10 +33,7 @@ class PositionRank(SingleRank):
         self.positions = defaultdict(float)
         """Container the sums of word's inverse positions."""
 
-    def candidate_selection(self,
-                            grammar=None,
-                            maximum_word_number=3,
-                            **kwargs):
+    def candidate_selection(self, grammar=None, maximum_word_number=3, **kwargs):
         """Candidate selection heuristic using a syntactic PoS pattern for
         noun phrase extraction.
 
@@ -88,14 +84,14 @@ class PositionRank(SingleRank):
             shift = sum([s.length for s in self.sentences[0:i]])
             for j, word in enumerate(sentence.stems):
                 if sentence.pos[j] in pos:
-                    text.append((word, shift+j))
+                    text.append((word, shift + j))
 
         # add nodes to the graph
         self.graph.add_nodes_from([word for (word, position) in text])
 
         # add edges to the graph
         for i, (node1, position1) in enumerate(text):
-            j = i+1
+            j = i + 1
             while j < len(text) and (text[j][1] - position1) < window:
                 node2, position2 = text[j]
                 if node1 != node2:
@@ -124,8 +120,7 @@ class PositionRank(SingleRank):
             pos = {'NOUN', 'PROPN', 'ADJ'}
 
         # build the word graph
-        self.build_word_graph(window=window,
-                              pos=pos)
+        self.build_word_graph(window=window, pos=pos)
 
         # normalize cumulated inverse positions
         norm = sum(self.positions.values())
@@ -133,11 +128,13 @@ class PositionRank(SingleRank):
             self.positions[word] /= norm
 
         # compute the word scores using biased random walk
-        w = nx.pagerank(G=self.graph,
-                        alpha=0.85,
-                        tol=0.0001,
-                        personalization=self.positions,
-                        weight='weight')
+        w = nx.pagerank(
+            G=self.graph,
+            alpha=0.85,
+            tol=0.0001,
+            personalization=self.positions,
+            weight='weight',
+        )
 
         # loop through the candidates
         for k in self.candidates.keys():
@@ -145,4 +142,3 @@ class PositionRank(SingleRank):
             self.weights[k] = sum([w.get(t, 0.0) for t in tokens])
             if normalized:
                 self.weights[k] /= len(tokens)
-

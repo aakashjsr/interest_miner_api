@@ -1,18 +1,32 @@
 import datetime
 
-from interests.models import Tweet, Paper, Keyword, ShortTermInterest, LongTermInterest, Category, BlacklistedKeyword
+from interests.models import (
+    Tweet,
+    Paper,
+    Keyword,
+    ShortTermInterest,
+    LongTermInterest,
+    Category,
+    BlacklistedKeyword,
+)
 from interests.Keyword_Extractor.extractor import getKeyword
 from interests.wikipedia_utils import wikicategory, wikifilter
 from interests.update_interests import update_interest_models, normalize
 
 from interests.Semantic_Similarity.Word_Embedding.IMsim import calculate_similarity
+from interests.Semantic_Similarity.WikiLink_Measure.Wiki import wikisim
 
 
 def generate_long_term_model(user_id):
     print("updating long term model for {}".format(user_id))
-    short_term_model = ShortTermInterest.objects.filter(user_id=user_id, used_in_calc=False)
+    short_term_model = ShortTermInterest.objects.filter(
+        user_id=user_id, used_in_calc=False
+    )
     short_term_data = {item.keyword.name: item.weight for item in short_term_model}
-    long_term_data = {item.keyword.name: item.weight for item in LongTermInterest.objects.filter(user_id=user_id)}
+    long_term_data = {
+        item.keyword.name: item.weight
+        for item in LongTermInterest.objects.filter(user_id=user_id)
+    }
     if not short_term_data:
         return
     new_data = update_interest_models(short_term_data, long_term_data)
@@ -33,9 +47,21 @@ def generate_long_term_model(user_id):
             print("Keyword found in db")
         print("keyword obtained")
 
-        long_term_model = LongTermInterest.objects.create(**{"user_id": user_id, "keyword": keyword_instance, "weight": weight})
-        tweet_list = [tweet for tweet in Tweet.objects.filter(user_id=user_id, full_text__icontains=keyword.lower())]
-        paper_list = [paper for paper in Paper.objects.filter(user_id=user_id, abstract__icontains=keyword.lower())]
+        long_term_model = LongTermInterest.objects.create(
+            **{"user_id": user_id, "keyword": keyword_instance, "weight": weight}
+        )
+        tweet_list = [
+            tweet
+            for tweet in Tweet.objects.filter(
+                user_id=user_id, full_text__icontains=keyword.lower()
+            )
+        ]
+        paper_list = [
+            paper
+            for paper in Paper.objects.filter(
+                user_id=user_id, abstract__icontains=keyword.lower()
+            )
+        ]
         if tweet_list:
             long_term_model.tweets.add(*tweet_list)
             long_term_model.source = ShortTermInterest.TWITTER
@@ -43,13 +69,18 @@ def generate_long_term_model(user_id):
             long_term_model.papers.add(*paper_list)
             long_term_model.source = ShortTermInterest.SCHOLAR
         if tweet_list and paper_list:
-            long_term_model.source = f"{ShortTermInterest.SCHOLAR} & {ShortTermInterest.TWITTER}"
+            long_term_model.source = (
+                f"{ShortTermInterest.SCHOLAR} & {ShortTermInterest.TWITTER}"
+            )
         long_term_model.save()
 
 
 def generate_short_term_model(user_id, source):
     blacklisted_keywords = list(
-        BlacklistedKeyword.objects.filter(user_id=user_id).values_list("keyword__name", flat=True))
+        BlacklistedKeyword.objects.filter(user_id=user_id).values_list(
+            "keyword__name", flat=True
+        )
+    )
 
     if source == ShortTermInterest.TWITTER:
         for tweet in Tweet.objects.filter(user_id=user_id, used_in_calc=False):
@@ -57,7 +88,7 @@ def generate_short_term_model(user_id, source):
             try:
                 keywords = getKeyword(tweet.full_text or "", model="Yake", num=20)
             except:
-                #silencing errors like
+                # silencing errors like
                 # interests/Keyword_Extractor/utils/datarepresentation.py:106: RuntimeWarning: Mean of empty slice
                 continue
             print(f"got keywords {keywords}")
@@ -76,22 +107,29 @@ def generate_short_term_model(user_id, source):
                 if keyword in blacklisted_keywords:
                     print("Skipping {} as its blacklisted".format(keyword))
                     continue
-                keyword_instance, created = Keyword.objects.get_or_create(name=keyword.lower())
+                keyword_instance, created = Keyword.objects.get_or_create(
+                    name=keyword.lower()
+                )
                 if created:
                     print("getting wiki categories")
                     categories = wikicategory(keyword)
                     for category in categories:
-                        category_instance, _ = Category.objects.get_or_create(name=category)
+                        category_instance, _ = Category.objects.get_or_create(
+                            name=category
+                        )
                         keyword_instance.categories.add(category_instance)
                     keyword_instance.save()
 
                 s_interest, _ = ShortTermInterest.objects.update_or_create(
-                    user_id=user_id, keyword=keyword_instance, model_month=tweet.created_at.month, model_year=tweet.created_at.year,
-                    defaults={"source": source, "weight": weight})
+                    user_id=user_id,
+                    keyword=keyword_instance,
+                    model_month=tweet.created_at.month,
+                    model_year=tweet.created_at.year,
+                    defaults={"source": source, "weight": weight},
+                )
                 s_interest.tweets.add(tweet)
             tweet.used_in_calc = True
             tweet.save()
-
 
     if source == ShortTermInterest.SCHOLAR:
         for paper in Paper.objects.filter(user_id=user_id, used_in_calc=False):
@@ -99,7 +137,7 @@ def generate_short_term_model(user_id, source):
             try:
                 keywords = getKeyword(paper.abstract or "", model="SingleRank", num=20)
             except:
-                #silencing errors like
+                # silencing errors like
                 # interests/Keyword_Extractor/utils/datarepresentation.py:106: RuntimeWarning: Mean of empty slice
                 continue
             print(f"got keywords {keywords}")
@@ -118,23 +156,36 @@ def generate_short_term_model(user_id, source):
                 if keyword in blacklisted_keywords:
                     print("Skipping {} as its blacklisted".format(keyword))
                     continue
-                keyword_instance, created = Keyword.objects.get_or_create(name=keyword.lower())
+                keyword_instance, created = Keyword.objects.get_or_create(
+                    name=keyword.lower()
+                )
                 if created:
                     print("getting wiki categories")
                     categories = wikicategory(keyword)
                     for category in categories:
-                        category_instance, _ = Category.objects.get_or_create(name=category)
+                        category_instance, _ = Category.objects.get_or_create(
+                            name=category
+                        )
                         keyword_instance.categories.add(category_instance)
                     keyword_instance.save()
 
                 s_interest, _ = ShortTermInterest.objects.update_or_create(
-                    user_id=user_id, keyword=keyword_instance, model_month=1,
+                    user_id=user_id,
+                    keyword=keyword_instance,
+                    model_month=1,
                     model_year=paper.year,
-                    defaults={"source": source, "weight": weight})
+                    defaults={"source": source, "weight": weight},
+                )
                 s_interest.papers.add(paper)
 
             paper.used_in_calc = True
             paper.save()
 
-def get_interest_similarity_score(keyword_list_1, keyword_list_2):
-    return calculate_similarity(keyword_list_1, keyword_list_2, embedding="Glove")
+
+def get_interest_similarity_score(
+    keyword_list_1, keyword_list_2, algorithm="WordEmbedding"
+):
+    if algorithm == "WordEmbedding":
+        return calculate_similarity(keyword_list_1, keyword_list_2, embedding="Glove")
+    else:
+        return wikisim(keyword_list_1, keyword_list_2)

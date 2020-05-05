@@ -33,8 +33,6 @@ from interests.Keyword_Extractor.Algorithms.graph_based.singlerank import Single
 
 
 class TopicalPageRank(SingleRank):
-  
-
     def __init__(self):
         """Redefining initializer for TopicalPageRank."""
 
@@ -66,12 +64,9 @@ class TopicalPageRank(SingleRank):
         # select sequence of adjectives and nouns
         self.grammar_selection(grammar=grammar)
 
-    def candidate_weighting(self,
-                            window=10,
-                            pos=None,
-                            lda_model=None,
-                            stoplist=None,
-                            normalized=False):
+    def candidate_weighting(
+        self, window=10, pos=None, lda_model=None, stoplist=None, normalized=False
+    ):
         """Candidate weight calculation using a biased PageRank towards LDA
         topic distributions.
 
@@ -98,8 +93,7 @@ class TopicalPageRank(SingleRank):
         # build the word graph
         # ``Since keyphrases are usually noun phrases, we only add adjectives
         # and nouns in word graph.'' -> (Liu et al., 2010)
-        self.build_word_graph(window=window,
-                              pos=pos)
+        self.build_word_graph(window=window, pos=pos)
 
         # create a blank model
         model = LatentDirichletAllocation()
@@ -107,19 +101,23 @@ class TopicalPageRank(SingleRank):
         # set the default LDA model if none provided
         if lda_model is None:
             if six.PY2:
-                lda_model = os.path.join(self._models,
-                                         "lda-1000-semeval2010.py2.pickle.gz")
+                lda_model = os.path.join(
+                    self._models, "lda-1000-semeval2010.py2.pickle.gz"
+                )
             else:
-                lda_model = os.path.join(self._models,
-                                         "lda-1000-semeval2010.py3.pickle.gz")
+                lda_model = os.path.join(
+                    self._models, "lda-1000-semeval2010.py3.pickle.gz"
+                )
             logging.warning('LDA model is hard coded to {}'.format(lda_model))
 
         # load parameters from file
         with gzip.open(lda_model, 'rb') as f:
-            (dictionary,
-             model.components_,
-             model.exp_dirichlet_component_,
-             model.doc_topic_prior_) = pickle.load(f)
+            (
+                dictionary,
+                model.components_,
+                model.exp_dirichlet_component_,
+                model.doc_topic_prior_,
+            ) = pickle.load(f)
 
         # build the document representation
         doc = []
@@ -127,8 +125,7 @@ class TopicalPageRank(SingleRank):
             doc.extend([s.stems[i] for i in range(s.length)])
 
         # vectorize document
-        tf_vectorizer = CountVectorizer(stop_words=stoplist,
-                                        vocabulary=dictionary)
+        tf_vectorizer = CountVectorizer(stop_words=stoplist, vocabulary=dictionary)
 
         tf = tf_vectorizer.fit_transform([' '.join(doc)])
 
@@ -136,8 +133,7 @@ class TopicalPageRank(SingleRank):
         distribution_topic_document = model.transform(tf)[0]
 
         # compute the word distributions over topics
-        distributions = model.components_ / model.components_.sum(axis=1)[:,
-                                            np.newaxis]
+        distributions = model.components_ / model.components_.sum(axis=1)[:, np.newaxis]
 
         # Computing W(w_i) indicating the full topical importance of each word
         # w_i in the PageRank
@@ -150,10 +146,10 @@ class TopicalPageRank(SingleRank):
         for word in self.graph.nodes():
             if word in dictionary:
                 index = dictionary.index(word)
-                distribution_word_topic = [distributions[k][index] for k
-                                           in range(K)]
-                W[word] = 1 - cosine(distribution_word_topic,
-                                     distribution_topic_document)
+                distribution_word_topic = [distributions[k][index] for k in range(K)]
+                W[word] = 1 - cosine(
+                    distribution_word_topic, distribution_topic_document
+                )
 
         # get the default probability for OOV words
         default_similarity = min(W.values())
@@ -167,11 +163,9 @@ class TopicalPageRank(SingleRank):
             W[word] /= norm
 
         # compute the word scores using biased random walk
-        w = nx.pagerank(G=self.graph,
-                        personalization=W,
-                        alpha=0.85,
-                        tol=0.0001,
-                        weight='weight')
+        w = nx.pagerank(
+            G=self.graph, personalization=W, alpha=0.85, tol=0.0001, weight='weight'
+        )
 
         # loop through the candidates
         for k in self.candidates.keys():

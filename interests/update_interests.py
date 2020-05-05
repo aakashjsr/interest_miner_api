@@ -38,4 +38,3 @@ def update_interest_models(x, y):
     updated_interest_model = normalize(updated)
 
     return updated_interest_model
-

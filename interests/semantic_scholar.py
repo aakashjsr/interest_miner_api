@@ -20,7 +20,6 @@ class SemanticScholarAPI:
 
         return data
 
-
     def author(self, id) -> dict:
         '''Author lookup
 
@@ -32,7 +31,6 @@ class SemanticScholarAPI:
         data = self.__get_data('author', id)
 
         return data
-
 
     def __get_data(self, method, id, include_unknown_references=False) -> dict:
         '''Get data from Semantic Scholar API
@@ -47,7 +45,9 @@ class SemanticScholarAPI:
         print("Getting {}".format(method))
         method_types = ['paper', 'author']
         if method not in method_types:
-            raise ValueError('Invalid method type. Expected one of: {}'.format(method_types))
+            raise ValueError(
+                'Invalid method type. Expected one of: {}'.format(method_types)
+            )
 
         url = '{}/{}/{}'.format(self.API_URL, method, id)
         if include_unknown_references:
@@ -84,17 +84,16 @@ class SemanticScholarAPI:
         print(collected_papers)
         return collected_papers
 
-
     def get_user_papers(self, user, start_year, end_year):
         if not user.author_id:
             print("No Author id present for user {}".format(user.author_id))
             return
         author = self.author(user.author_id)
         papers = author["papers"]
-        collectedpapers=[]
+        collectedpapers = []
         for paper in papers:
-            if start_year <= paper["year"] <=end_year:
-                abstract=self.paper(paper["paperId"])["abstract"]
+            if start_year <= paper["year"] <= end_year:
+                abstract = self.paper(paper["paperId"])["abstract"]
                 try:
                     lan = detect(abstract)
                     if lan == 'en':
@@ -103,5 +102,6 @@ class SemanticScholarAPI:
                 except TypeError:
                     collectedpapers.append(paper)
         return collectedpapers
+
 
 # a=ob.get_paper(1724546, 2018, 2019)

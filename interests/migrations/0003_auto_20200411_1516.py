@@ -16,12 +16,21 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='longterminterest',
             name='user',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, related_name='long_term_interests', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(
+                default=None,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='long_term_interests',
+                to=settings.AUTH_USER_MODEL,
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
             model_name='shortterminterest',
             name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='short_term_interests', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='short_term_interests',
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

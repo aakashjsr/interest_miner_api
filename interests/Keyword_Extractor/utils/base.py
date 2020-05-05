@@ -24,12 +24,24 @@ from builtins import str
 
 nltk.download('stopwords')
 
-ISO_to_language = {'en': 'english', 'pt': 'portuguese', 'fr': 'french',
-                   'es': 'spanish', 'it': 'italian', 'nl': 'dutch',
-                   'de': 'german'}
+ISO_to_language = {
+    'en': 'english',
+    'pt': 'portuguese',
+    'fr': 'french',
+    'es': 'spanish',
+    'it': 'italian',
+    'nl': 'dutch',
+    'de': 'german',
+}
 
-escaped_punctuation = {'-lrb-': '(', '-rrb-': ')', '-lsb-': '[', '-rsb-': ']',
-                       '-lcb-': '{', '-rcb-': '}'}
+escaped_punctuation = {
+    '-lrb-': '(',
+    '-rrb-': ')',
+    '-lsb-': '[',
+    '-rsb-': ']',
+    '-lcb-': '{',
+    '-rcb-': '}',
+}
 
 
 class LoadFile(object):
@@ -83,8 +95,8 @@ class LoadFile(object):
         # test whether the language is known, otherwise fall back to english
         if language not in ISO_to_language:
             logging.warning(
-                "ISO 639 code {} is not supported, switching to 'en'.".format(
-                    language))
+                "ISO 639 code {} is not supported, switching to 'en'.".format(language)
+            )
             language = 'en'
 
         # initialize document
@@ -165,8 +177,9 @@ class LoadFile(object):
             stemmer = SnowballStemmer("porter")
         else:
             # create a new instance of a porter stemmer
-            stemmer = SnowballStemmer(ISO_to_language[self.language],
-                                      ignore_stopwords=True)
+            stemmer = SnowballStemmer(
+                ISO_to_language[self.language], ignore_stopwords=True
+            )
 
         # iterate throughout the sentences
         for i, sentence in enumerate(self.sentences):
@@ -178,8 +191,9 @@ class LoadFile(object):
         if self.language == 'en':
             # iterate throughout the sentences
             for i, sentence in enumerate(self.sentences):
-                self.sentences[i].pos = [map_tag('en-ptb', 'universal', tag)
-                                         for tag in sentence.pos]
+                self.sentences[i].pos = [
+                    map_tag('en-ptb', 'universal', tag) for tag in sentence.pos
+                ]
 
     def unescape_punctuation_marks(self):
         """Replaces the special punctuation marks produced by CoreNLP."""
@@ -187,8 +201,7 @@ class LoadFile(object):
         for i, sentence in enumerate(self.sentences):
             for j, word in enumerate(sentence.words):
                 l_word = word.lower()
-                self.sentences[i].words[j] = escaped_punctuation.get(l_word,
-                                                                     word)
+                self.sentences[i].words[j] = escaped_punctuation.get(l_word, word)
 
     def is_redundant(self, candidate, prev, minimum_length=1):
         """Test if one candidate is redundant with respect to a list of already
@@ -216,7 +229,7 @@ class LoadFile(object):
         # loop through the already selected candidates
         for prev_candidate in prev:
             for i in range(len(prev_candidate) - len(candidate) + 1):
-                if candidate == prev_candidate[i:i + len(candidate)]:
+                if candidate == prev_candidate[i : i + len(candidate)]:
                     return True
         return False
 
@@ -259,17 +272,20 @@ class LoadFile(object):
             best = non_redundant_best
 
         # get the list of best candidates as (lexical form, weight) tuples
-        n_best = [(u, self.weights[u]) for u in best[:min(n, len(best))]]
+        n_best = [(u, self.weights[u]) for u in best[: min(n, len(best))]]
 
         # replace with surface forms if no stemming
         if not stemming:
-            n_best = [(' '.join(self.candidates[u].surface_forms[0]).lower(),
-                       self.weights[u]) for u in best[:min(n, len(best))]]
+            n_best = [
+                (' '.join(self.candidates[u].surface_forms[0]).lower(), self.weights[u])
+                for u in best[: min(n, len(best))]
+            ]
 
         if len(n_best) < n:
             logging.warning(
                 'Not enough candidates to choose from '
-                '({} requested, {} given)'.format(n, len(n_best)))
+                '({} requested, {} given)'.format(n, len(n_best))
+            )
 
         # return the list of best candidates
         return n_best
@@ -323,19 +339,19 @@ class LoadFile(object):
             for j in range(sentence.length):
                 for k in range(j + 1, min(j + 1 + skip, sentence.length + 1)):
                     # add the ngram to the candidate container
-                    self.add_candidate(words=sentence.words[j:k],
-                                       stems=sentence.stems[j:k],
-                                       pos=sentence.pos[j:k],
-                                       offset=shift + j,
-                                       sentence_id=i)
+                    self.add_candidate(
+                        words=sentence.words[j:k],
+                        stems=sentence.stems[j:k],
+                        pos=sentence.pos[j:k],
+                        offset=shift + j,
+                        sentence_id=i,
+                    )
 
     def longest_pos_sequence_selection(self, valid_pos=None):
-        self.longest_sequence_selection(
-            key=lambda s: s.pos, valid_values=valid_pos)
+        self.longest_sequence_selection(key=lambda s: s.pos, valid_values=valid_pos)
 
     def longest_keyword_sequence_selection(self, keywords):
-        self.longest_sequence_selection(
-            key=lambda s: s.stems, valid_values=keywords)
+        self.longest_sequence_selection(key=lambda s: s.stems, valid_values=keywords)
 
     def longest_sequence_selection(self, key, valid_values):
         """Select the longest sequences of given POS tags as candidates.
@@ -367,11 +383,13 @@ class LoadFile(object):
                 if seq:
 
                     # add the ngram to the candidate container
-                    self.add_candidate(words=sentence.words[seq[0]:seq[-1] + 1],
-                                       stems=sentence.stems[seq[0]:seq[-1] + 1],
-                                       pos=sentence.pos[seq[0]:seq[-1] + 1],
-                                       offset=shift + seq[0],
-                                       sentence_id=i)
+                    self.add_candidate(
+                        words=sentence.words[seq[0] : seq[-1] + 1],
+                        stems=sentence.stems[seq[0] : seq[-1] + 1],
+                        pos=sentence.pos[seq[0] : seq[-1] + 1],
+                        offset=shift + seq[0],
+                        sentence_id=i,
+                    )
 
                 # flush sequence container
                 seq = []
@@ -420,11 +438,13 @@ class LoadFile(object):
                     last = int(leaves[-1][0])
 
                     # add the NP to the candidate container
-                    self.add_candidate(words=sentence.words[first:last + 1],
-                                       stems=sentence.stems[first:last + 1],
-                                       pos=sentence.pos[first:last + 1],
-                                       offset=shift + first,
-                                       sentence_id=i)
+                    self.add_candidate(
+                        words=sentence.words[first : last + 1],
+                        stems=sentence.stems[first : last + 1],
+                        pos=sentence.pos[first : last + 1],
+                        offset=shift + first,
+                        sentence_id=i,
+                    )
 
     @staticmethod
     def _is_alphanum(word, valid_punctuation_marks='-'):
@@ -440,14 +460,16 @@ class LoadFile(object):
             word = word.replace(punct, '')
         return word.isalnum()
 
-    def candidate_filtering(self,
-                            stoplist=None,
-                            minimum_length=3,
-                            minimum_word_size=2,
-                            valid_punctuation_marks='-',
-                            maximum_word_number=5,
-                            only_alphanum=True,
-                            pos_blacklist=None):
+    def candidate_filtering(
+        self,
+        stoplist=None,
+        minimum_length=3,
+        minimum_word_size=2,
+        valid_punctuation_marks='-',
+        maximum_word_number=5,
+        only_alphanum=True,
+        pos_blacklist=None,
+    ):
         """Filter the candidates containing strings from the stoplist. Only
         keep the candidates containing alpha-numeric characters (if the
         non_latin_filter is set to True) and those length exceeds a given
@@ -510,7 +532,7 @@ class LoadFile(object):
 
             # discard if not containing only alpha-numeric characters
             if only_alphanum and k in self.candidates:
-                if not all([self._is_alphanum(w, valid_punctuation_marks)
-                            for w in words]):
+                if not all(
+                    [self._is_alphanum(w, valid_punctuation_marks) for w in words]
+                ):
                     del self.candidates[k]
-

@@ -25,19 +25,22 @@ class MinimalCoreNLPReader(Reader):
         tree = etree.parse(path, self.parser)
         for sentence in tree.iterfind('./document/sentences/sentence'):
             # get the character offsets
-            starts = [int(u.text) for u in
-                      sentence.iterfind("tokens/token/CharacterOffsetBegin")]
-            ends = [int(u.text) for u in
-                    sentence.iterfind("tokens/token/CharacterOffsetEnd")]
-            sentences.append({
-                "words": [u.text for u in
-                          sentence.iterfind("tokens/token/word")],
-                "lemmas": [u.text for u in
-                           sentence.iterfind("tokens/token/lemma")],
-                "POS": [u.text for u in sentence.iterfind("tokens/token/POS")],
-                "char_offsets": [(starts[k], ends[k]) for k in
-                                 range(len(starts))]
-            })
+            starts = [
+                int(u.text)
+                for u in sentence.iterfind("tokens/token/CharacterOffsetBegin")
+            ]
+            ends = [
+                int(u.text)
+                for u in sentence.iterfind("tokens/token/CharacterOffsetEnd")
+            ]
+            sentences.append(
+                {
+                    "words": [u.text for u in sentence.iterfind("tokens/token/word")],
+                    "lemmas": [u.text for u in sentence.iterfind("tokens/token/lemma")],
+                    "POS": [u.text for u in sentence.iterfind("tokens/token/POS")],
+                    "char_offsets": [(starts[k], ends[k]) for k in range(len(starts))],
+                }
+            )
             sentences[-1].update(sentence.attrib)
 
         doc = Document.from_sentences(sentences, input_file=path, **kwargs)
@@ -69,24 +72,25 @@ class RawTextReader(Reader):
                 spacy, default to 1,000,000 characters (1mb).
         """
 
-        max_length = kwargs.get('max_length', 10**6)
-        nlp = spacy.load(self.language,
-                         max_length=max_length)
+        max_length = kwargs.get('max_length', 10 ** 6)
+        nlp = spacy.load(self.language, max_length=max_length)
         spacy_doc = nlp(text)
 
         sentences = []
         for sentence_id, sentence in enumerate(spacy_doc.sents):
-            sentences.append({
-                "words": [token.text for token in sentence],
-                "lemmas": [token.lemma_ for token in sentence],
-                "POS": [token.pos_ for token in sentence],
-                "char_offsets": [(token.idx, token.idx + len(token.text))
-                                     for token in sentence]
-            })
+            sentences.append(
+                {
+                    "words": [token.text for token in sentence],
+                    "lemmas": [token.lemma_ for token in sentence],
+                    "POS": [token.pos_ for token in sentence],
+                    "char_offsets": [
+                        (token.idx, token.idx + len(token.text)) for token in sentence
+                    ],
+                }
+            )
 
-        doc = Document.from_sentences(sentences,
-                                      input_file=kwargs.get('input_file', None),
-                                      **kwargs)
+        doc = Document.from_sentences(
+            sentences, input_file=kwargs.get('input_file', None), **kwargs
+        )
 
         return doc
-

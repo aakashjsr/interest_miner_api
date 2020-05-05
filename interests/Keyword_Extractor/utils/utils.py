@@ -29,8 +29,7 @@ from nltk.stem.snowball import SnowballStemmer
 from nltk.corpus import stopwords
 
 
-def load_document_frequency_file(input_file,
-                                 delimiter='\t'):
+def load_document_frequency_file(input_file, delimiter='\t'):
     """Load a tsv (tab-separated-values) file containing document frequencies.
     Automatically detects if input file is compressed (gzip) by looking at its
     extension (.gz).
@@ -49,8 +48,9 @@ def load_document_frequency_file(input_file,
     frequencies = {}
 
     # open the input file
-    with gzip.open(input_file, 'rt') if input_file.endswith('.gz') else \
-            codecs.open(input_file, 'rt') as f:
+    with gzip.open(input_file, 'rt') if input_file.endswith('.gz') else codecs.open(
+        input_file, 'rt'
+    ) as f:
         # read the csv file
         df_reader = csv.reader(f, delimiter=delimiter)
 
@@ -62,14 +62,16 @@ def load_document_frequency_file(input_file,
     return frequencies
 
 
-def compute_document_frequency(input_dir,
-                               output_file,
-                               extension='xml',
-                               language='en',
-                               normalization="stemming",
-                               stoplist=None,
-                               delimiter='\t',
-                               n=3):
+def compute_document_frequency(
+    input_dir,
+    output_file,
+    extension='xml',
+    language='en',
+    normalization="stemming",
+    stoplist=None,
+    delimiter='\t',
+    n=3,
+):
     """Compute the n-gram document frequencies from a set of input documents. An
     extra row is added to the output file for specifying the number of
     documents from which the document frequencies were computed
@@ -99,15 +101,15 @@ def compute_document_frequency(input_dir,
     # loop through the documents
     for input_file in glob.iglob(input_dir + '/*.' + extension):
 
-        #logging.info('reading file {}'.format(input_file))
+        # logging.info('reading file {}'.format(input_file))
 
         # initialize load file object
         doc = LoadFile()
 
         # read the input file
-        doc.load_document(input=input_file,
-                          language=language,
-                          normalization=normalization)
+        doc.load_document(
+            input=input_file, language=language, normalization=normalization
+        )
 
         # candidate selection
         doc.ngram_selection(n=n)
@@ -122,10 +124,11 @@ def compute_document_frequency(input_dir,
         nb_documents += 1
 
         if nb_documents % 1000 == 0:
-            logging.info("{} docs, memory used: {} mb".format(nb_documents,
-                                                           sys.getsizeof(
-                                                               frequencies)
-                                                           / 1024 / 1024 ))
+            logging.info(
+                "{} docs, memory used: {} mb".format(
+                    nb_documents, sys.getsizeof(frequencies) / 1024 / 1024
+                )
+            )
 
     # create directories from path if not exists
     if os.path.dirname(output_file):
@@ -143,18 +146,20 @@ def compute_document_frequency(input_dir,
             f.write(line.encode('utf-8') + b'\n')
 
 
-def train_supervised_model(input_dir,
-                           reference_file,
-                           model_file,
-                           extension='xml',
-                           language='en',
-                           normalization="stemming",
-                           df=None,
-                           model=None,
-                           sep_doc_id=':',
-                           sep_ref_keyphrases=',',
-                           normalize_reference=False,
-                           leave_one_out=False):
+def train_supervised_model(
+    input_dir,
+    reference_file,
+    model_file,
+    extension='xml',
+    language='en',
+    normalization="stemming",
+    df=None,
+    model=None,
+    sep_doc_id=':',
+    sep_ref_keyphrases=',',
+    normalize_reference=False,
+    leave_one_out=False,
+):
     """Build a supervised keyphrase extraction model from a set of documents and
     a reference file.
 
@@ -182,11 +187,13 @@ def train_supervised_model(input_dir,
 
     logging.info('building model {} from {}'.format(model, input_dir))
 
-    references = load_references(reference_file,
-                                 sep_doc_id=sep_doc_id,
-                                 sep_ref_keyphrases=sep_ref_keyphrases,
-                                 normalize_reference=normalize_reference,
-                                 language=language)
+    references = load_references(
+        reference_file,
+        sep_doc_id=sep_doc_id,
+        sep_ref_keyphrases=sep_ref_keyphrases,
+        normalize_reference=normalize_reference,
+        language=language,
+    )
     training_instances = []
     training_classes = []
     masks = {}
@@ -205,9 +212,9 @@ def train_supervised_model(input_dir,
         model.__init__()
 
         # load the document
-        model.load_document(input=input_file,
-                            language=language,
-                            normalization=normalization)
+        model.load_document(
+            input=input_file, language=language, normalization=normalization
+        )
 
         # candidate selection
         model.candidate_selection()
@@ -235,28 +242,34 @@ def train_supervised_model(input_dir,
 
     if not leave_one_out:
         logging.info('writing model to {}'.format(model_file))
-        model.train(training_instances=training_instances,
-                    training_classes=training_classes,
-                    model_file=model_file)
+        model.train(
+            training_instances=training_instances,
+            training_classes=training_classes,
+            model_file=model_file,
+        )
     else:
         logging.info('leave-one-out training procedure')
 
         for doc_id in masks:
             logging.info('writing model to {}'.format(doc_id))
             ind = masks[doc_id]
-            fold = training_instances[:ind[0]] + training_instances[ind[1]:]
-            gold = training_classes[:ind[0]] + training_classes[ind[1]:]
-            model.train(training_instances=fold,
-                        training_classes=gold,
-                        model_file=model_file+"."+doc_id+".pickle")
+            fold = training_instances[: ind[0]] + training_instances[ind[1] :]
+            gold = training_classes[: ind[0]] + training_classes[ind[1] :]
+            model.train(
+                training_instances=fold,
+                training_classes=gold,
+                model_file=model_file + "." + doc_id + ".pickle",
+            )
 
 
-def load_references(input_file,
-                    sep_doc_id=':',
-                    sep_ref_keyphrases=',',
-                    normalize_reference=False,
-                    language="en",
-                    encoding='utf-8'):
+def load_references(
+    input_file,
+    sep_doc_id=':',
+    sep_ref_keyphrases=',',
+    normalize_reference=False,
+    language="en",
+    encoding='utf-8',
+):
     """Load a reference file. Reference file can be either in json format or in
     the SemEval-2010 official format.
 
@@ -284,9 +297,11 @@ def load_references(input_file,
         if input_file.endswith('.json'):
             references = json.load(f)
             for doc_id in references:
-                references[doc_id] = [keyphrase for variants in
-                                      references[doc_id] for keyphrase in
-                                      variants]
+                references[doc_id] = [
+                    keyphrase
+                    for variants in references[doc_id]
+                    for keyphrase in variants
+                ]
         # or load SemEval-2010 file
         else:
             for line in f:
@@ -306,8 +321,9 @@ def load_references(input_file,
             # initialize stemmer
             stemmer = SnowballStemmer("porter")
             if language != 'en':
-                stemmer = SnowballStemmer(ISO_to_language[language],
-                                          ignore_stopwords=True)
+                stemmer = SnowballStemmer(
+                    ISO_to_language[language], ignore_stopwords=True
+                )
 
             for doc_id in references:
                 for i, keyphrase in enumerate(references[doc_id]):
@@ -317,12 +333,14 @@ def load_references(input_file,
     return references
 
 
-def compute_lda_model(input_dir,
-                      output_file,
-                      n_topics=500,
-                      extension="xml",
-                      language="en",
-                      normalization="stemming"):
+def compute_lda_model(
+    input_dir,
+    output_file,
+    n_topics=500,
+    extension="xml",
+    language="en",
+    normalization="stemming",
+):
     """Compute a LDA model from a collection of documents. Latent Dirichlet
     Allocation is computed using sklearn module.
 
@@ -350,9 +368,9 @@ def compute_lda_model(input_dir,
         doc = LoadFile()
 
         # read the input file
-        doc.load_document(input=input_file,
-                          language=language,
-                          normalization=normalization)
+        doc.load_document(
+            input=input_file, language=language, normalization=normalization
+        )
 
         # container for current document
         text = []
@@ -360,10 +378,14 @@ def compute_lda_model(input_dir,
         # loop through sentences
         for sentence in doc.sentences:
             # get the tokens (stems) from the sentence if they are not
-            # punctuation marks 
-            text.extend([sentence.stems[i] for i in range(sentence.length)
-                         if sentence.pos[i] != 'PUNCT' and
-                         sentence.pos[i].isalpha()])
+            # punctuation marks
+            text.extend(
+                [
+                    sentence.stems[i]
+                    for i in range(sentence.length)
+                    if sentence.pos[i] != 'PUNCT' and sentence.pos[i].isalpha()
+                ]
+            )
 
         # add the document to the texts container
         texts.append(' '.join(text))
@@ -372,23 +394,26 @@ def compute_lda_model(input_dir,
     # get the stoplist from nltk because CountVectorizer only contains english
     # stopwords atm
     tf_vectorizer = CountVectorizer(
-        stop_words=stopwords.words(ISO_to_language[language]))
+        stop_words=stopwords.words(ISO_to_language[language])
+    )
     tf = tf_vectorizer.fit_transform(texts)
 
     # extract vocabulary
     vocabulary = tf_vectorizer.get_feature_names()
 
     # create LDA model and train
-    lda_model = LatentDirichletAllocation(n_components=n_topics,
-                                          random_state=0,
-                                          learning_method='batch')
+    lda_model = LatentDirichletAllocation(
+        n_components=n_topics, random_state=0, learning_method='batch'
+    )
     lda_model.fit(tf)
 
     # save all data necessary for later prediction
-    saved_model = (vocabulary,
-                   lda_model.components_,
-                   lda_model.exp_dirichlet_component_,
-                   lda_model.doc_topic_prior_)
+    saved_model = (
+        vocabulary,
+        lda_model.components_,
+        lda_model.exp_dirichlet_component_,
+        lda_model.doc_topic_prior_,
+    )
 
     # Dump the df container
     logging.info('writing LDA model to {}'.format(output_file))
@@ -402,10 +427,9 @@ def compute_lda_model(input_dir,
         pickle.dump(saved_model, fp)
 
 
-def load_document_as_bos(input_file,
-                         language="en",
-                         normalization="stemming",
-                         stoplist=None):
+def load_document_as_bos(
+    input_file, language="en", normalization="stemming", stoplist=None
+):
     """Load a document as a bag of words/stems/lemmas.
 
     Args:
@@ -426,9 +450,7 @@ def load_document_as_bos(input_file,
     doc = LoadFile()
 
     # read the input file
-    doc.load_document(input=input_file,
-                      language=language,
-                      normalization=normalization)
+    doc.load_document(input=input_file, language=language, normalization=normalization)
 
     # initialize document vector
     vector = defaultdict(int)
@@ -443,14 +465,16 @@ def load_document_as_bos(input_file,
     return vector
 
 
-def compute_pairwise_similarity_matrix(input_dir,
-                                       output_file,
-                                       collection_dir=None,
-                                       df=None,
-                                       extension="xml",
-                                       language="en",
-                                       normalization="stemming",
-                                       stoplist=None):
+def compute_pairwise_similarity_matrix(
+    input_dir,
+    output_file,
+    collection_dir=None,
+    df=None,
+    extension="xml",
+    language="en",
+    normalization="stemming",
+    stoplist=None,
+):
     """Compute the pairwise similarity between documents in `input_dir` and
     documents in `collection_dir`. Similarity scores are computed using a cosine
     similarity over TF x IDF term weights. If there is no collection to compute
@@ -492,10 +516,12 @@ def compute_pairwise_similarity_matrix(input_dir,
             logging.info('Reading file from {}'.format(input_file))
 
             # initialize document vector
-            collection[input_file] = load_document_as_bos(input_file=input_file,
-                                                          language=language,
-                                                          normalization=normalization,
-                                                          stoplist=stoplist)
+            collection[input_file] = load_document_as_bos(
+                input_file=input_file,
+                language=language,
+                normalization=normalization,
+                stoplist=stoplist,
+            )
 
             # compute TF*IDF weights
             for stem in collection[input_file]:
@@ -510,19 +536,20 @@ def compute_pairwise_similarity_matrix(input_dir,
         logging.info('Reading file from {}'.format(input_file))
 
         # initialize document vector
-        documents[input_file] = load_document_as_bos(input_file=input_file,
-                                                     language=language,
-                                                     normalization=normalization,
-                                                     stoplist=stoplist)
+        documents[input_file] = load_document_as_bos(
+            input_file=input_file,
+            language=language,
+            normalization=normalization,
+            stoplist=stoplist,
+        )
 
         # compute TF*IDF weights
         for stem in documents[input_file]:
-            documents[input_file][stem] *= math.log(N / (1+df.get(stem, 1)), 2)
+            documents[input_file][stem] *= math.log(N / (1 + df.get(stem, 1)), 2)
 
     # consider input documents as collection if None provided
     if not collection:
         collection = documents
-
 
     # create directories from path if not exists
     if os.path.dirname(output_file):
@@ -543,11 +570,13 @@ def compute_pairwise_similarity_matrix(input_dir,
                     inner += documents[doc_i][stem] * collection[doc_j][stem]
 
                 # norms
-                norm_i = sum([math.pow(documents[doc_i][t], 2) for t in
-                              documents[doc_i]])
+                norm_i = sum(
+                    [math.pow(documents[doc_i][t], 2) for t in documents[doc_i]]
+                )
                 norm_i = math.sqrt(norm_i)
-                norm_j = sum([math.pow(collection[doc_j][t], 2) for t in
-                              collection[doc_j]])
+                norm_j = sum(
+                    [math.pow(collection[doc_j][t], 2) for t in collection[doc_j]]
+                )
                 norm_j = math.sqrt(norm_j)
 
                 # compute cosine

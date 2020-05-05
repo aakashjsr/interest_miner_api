@@ -28,8 +28,6 @@ from interests.Keyword_Extractor.utils.base import LoadFile
 
 
 class TopicRank(LoadFile):
- 
-
     def __init__(self):
         """Redefining initializer for TopicRank.
         """
@@ -67,9 +65,11 @@ class TopicRank(LoadFile):
             stoplist = self.stoplist
 
         # filter candidates containing stopwords or punctuation marks
-        self.candidate_filtering(stoplist=list(string.punctuation) +
-                                          ['-lrb-', '-rrb-', '-lcb-', '-rcb-', '-lsb-', '-rsb-'] +
-                                          stoplist)
+        self.candidate_filtering(
+            stoplist=list(string.punctuation)
+            + ['-lrb-', '-rrb-', '-lcb-', '-rcb-', '-lsb-', '-rsb-']
+            + stoplist
+        )
 
     def vectorize_candidates(self):
         """Vectorize the keyphrase candidates.
@@ -129,8 +129,13 @@ class TopicRank(LoadFile):
 
         # for each topic identifier
         for cluster_id in range(1, max(clusters) + 1):
-            self.topics.append([candidates[j] for j in range(len(clusters))
-                                if clusters[j] == cluster_id])
+            self.topics.append(
+                [
+                    candidates[j]
+                    for j in range(len(clusters))
+                    if clusters[j] == cluster_id
+                ]
+            )
 
     def build_topic_graph(self):
         """Build topic graph."""
@@ -152,10 +157,7 @@ class TopicRank(LoadFile):
                                 gap -= len(self.candidates[c_j].lexical_form) - 1
                             self.graph[i][j]['weight'] += 1.0 / gap
 
-    def candidate_weighting(self,
-                            threshold=0.74,
-                            method='average',
-                            heuristic=None):
+    def candidate_weighting(self, threshold=0.74, method='average', heuristic=None):
         """Candidate ranking using random walk.
 
         Args:

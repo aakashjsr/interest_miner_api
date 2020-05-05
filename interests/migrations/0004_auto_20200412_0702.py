@@ -14,14 +14,10 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RenameField(
-            model_name='longterminterest',
-            old_name='created_at',
-            new_name='created_on',
+            model_name='longterminterest', old_name='created_at', new_name='created_on',
         ),
         migrations.RenameField(
-            model_name='longterminterest',
-            old_name='updated_at',
-            new_name='updated_on',
+            model_name='longterminterest', old_name='updated_at', new_name='updated_on',
         ),
         migrations.RenameField(
             model_name='shortterminterest',
@@ -36,7 +32,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Tweet',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('id_str', models.CharField(blank=True, max_length=2048, null=True)),
                 ('full_text', models.TextField(blank=True, null=True)),
                 ('entities', models.TextField(blank=True, null=True)),
@@ -44,13 +48,28 @@ class Migration(migrations.Migration):
                 ('used_in_calc', models.BooleanField(default=False)),
                 ('updated_on', models.DateTimeField(auto_now=True)),
                 ('created_on', models.DateTimeField(auto_now_add=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tweets', to=settings.AUTH_USER_MODEL)),
+                (
+                    'user',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='tweets',
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
             name='Paper',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('paper_id', models.CharField(blank=True, max_length=255, null=True)),
                 ('title', models.CharField(blank=True, max_length=2048, null=True)),
                 ('url', models.CharField(blank=True, max_length=1024, null=True)),
@@ -59,7 +78,14 @@ class Migration(migrations.Migration):
                 ('used_in_calc', models.BooleanField(default=False)),
                 ('updated_on', models.DateTimeField(auto_now=True)),
                 ('created_on', models.DateTimeField(auto_now_add=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='papers', to=settings.AUTH_USER_MODEL)),
+                (
+                    'user',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='papers',
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

@@ -1,11 +1,18 @@
-from .models import Paper, Keyword, BlacklistedKeyword, ShortTermInterest, LongTermInterest, Category
+from .models import (
+    Paper,
+    Keyword,
+    BlacklistedKeyword,
+    ShortTermInterest,
+    LongTermInterest,
+    Category,
+)
 from rest_framework import serializers
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ("name", )
+        fields = ("name",)
 
 
 class PaperSerializer(serializers.ModelSerializer):
@@ -31,6 +38,7 @@ class BlacklistedKeywordSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlacklistedKeyword
         fields = "__all__"
+
 
 class ShortTermInterestSerializer(serializers.ModelSerializer):
     keyword = serializers.SerializerMethodField()
@@ -63,7 +71,6 @@ class LongTermInterestSerializer(serializers.ModelSerializer):
     tweet_ids = serializers.SerializerMethodField()
     papers = PaperSerializer(many=True)
 
-
     def get_tweet_ids(self, instance):
         if instance.tweets.count():
             return [tweet.id_str for tweet in instance.tweets.all()]
@@ -84,5 +91,26 @@ class KeywordCreateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=1000)
     weight = serializers.FloatField(max_value=5, min_value=1)
 
+
 class ListDataSerializer(serializers.Serializer):
     keywords = KeywordCreateSerializer(many=True)
+
+
+class InterestExtractionSerializer(serializers.Serializer):
+    text = serializers.CharField()
+    algorithm = serializers.ChoiceField(
+        choices=[("Yake", "Yake"), ("SingleRank", "SingleRank")]
+    )
+    wiki_filter = serializers.BooleanField(default=True)
+    num_of_keywords = serializers.IntegerField(default=20)
+
+
+class KeywordSimilariySerializer(serializers.Serializer):
+    keywords_1 = serializers.ListField()
+    keywords_2 = serializers.ListField()
+    algorithm = serializers.ChoiceField(
+        choices=[
+            ("WordEmbedding", "WordEmbedding"),
+            ("WikiLinkMeasure", "WikiLinkMeasure"),
+        ]
+    )

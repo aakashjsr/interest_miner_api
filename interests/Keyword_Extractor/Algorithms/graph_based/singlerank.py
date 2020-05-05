@@ -22,8 +22,6 @@ from interests.Keyword_Extractor.Algorithms.graph_based.textrank import TextRank
 
 
 class SingleRank(TextRank):
-
-
     def __init__(self):
         """Redefining initializer for SingleRank."""
 
@@ -51,8 +49,11 @@ class SingleRank(TextRank):
             pos = {'NOUN', 'PROPN', 'ADJ'}
 
         # flatten document as a sequence of (word, pass_syntactic_filter) tuples
-        text = [(word, sentence.pos[i] in pos) for sentence in self.sentences
-                for i, word in enumerate(sentence.stems)]
+        text = [
+            (word, sentence.pos[i] in pos)
+            for sentence in self.sentences
+            for i, word in enumerate(sentence.stems)
+        ]
 
         # add nodes to the graph
         self.graph.add_nodes_from([word for word, valid in text if valid])
@@ -92,10 +93,7 @@ class SingleRank(TextRank):
         self.build_word_graph(window=window, pos=pos)
 
         # compute the word scores using random walk
-        w = nx.pagerank_scipy(self.graph,
-                              alpha=0.85,
-                              tol=0.0001,
-                              weight='weight')
+        w = nx.pagerank_scipy(self.graph, alpha=0.85, tol=0.0001, weight='weight')
 
         # loop through the candidates
         for k in self.candidates.keys():
@@ -105,4 +103,4 @@ class SingleRank(TextRank):
                 self.weights[k] /= len(tokens)
 
             # use position to break ties
-            self.weights[k] += (self.candidates[k].offsets[0] * 1e-8)
+            self.weights[k] += self.candidates[k].offsets[0] * 1e-8

@@ -11,13 +11,9 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RenameField(
-            model_name='longterminterest',
-            old_name='paper',
-            new_name='papers',
+            model_name='longterminterest', old_name='paper', new_name='papers',
         ),
         migrations.RenameField(
-            model_name='longterminterest',
-            old_name='tweet',
-            new_name='tweets',
+            model_name='longterminterest', old_name='tweet', new_name='tweets',
         ),
     ]

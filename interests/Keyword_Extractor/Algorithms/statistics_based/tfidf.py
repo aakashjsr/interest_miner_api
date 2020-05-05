@@ -17,8 +17,6 @@ from interests.Keyword_Extractor.utils.utils import load_document_frequency_file
 
 
 class TfIdf(LoadFile):
-
-
     def candidate_selection(self, n=3, stoplist=None, **kwargs):
         """Select 1-3 grams as keyphrase candidates.
 
@@ -50,8 +48,9 @@ class TfIdf(LoadFile):
 
         # initialize default document frequency counts if none provided
         if df is None:
-            logging.warning('LoadFile._df_counts is hard coded to {}'.format(
-                self._df_counts))
+            logging.warning(
+                'LoadFile._df_counts is hard coded to {}'.format(self._df_counts)
+            )
             df = load_document_frequency_file(self._df_counts, delimiter='\t')
 
         # initialize the number of documents as --NB_DOC-- + 1 (current)

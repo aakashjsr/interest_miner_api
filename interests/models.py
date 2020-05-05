@@ -11,6 +11,7 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+
 class Paper(models.Model):
     user = models.ForeignKey(User, related_name="papers", on_delete=models.CASCADE)
     paper_id = models.CharField(max_length=255, null=True, blank=True, default="manual")
@@ -51,15 +52,24 @@ class Keyword(models.Model):
         self.name = self.name.lower()
         return super().save(*args, **kwargs)
 
+
 class ShortTermInterest(models.Model):
     TWITTER = "Twitter"
     SCHOLAR = "Scholar"
     MANUAL = "Manual"
 
-    keyword = models.ForeignKey(Keyword, related_name="short_term_models", on_delete=models.CASCADE)
+    keyword = models.ForeignKey(
+        Keyword, related_name="short_term_models", on_delete=models.CASCADE
+    )
     weight = models.FloatField(default=1)
-    source = models.CharField(max_length=512, choices=[(TWITTER, TWITTER), (SCHOLAR, SCHOLAR), (MANUAL, MANUAL)], default=MANUAL)
-    user = models.ForeignKey(User, related_name="short_term_interests", on_delete=models.CASCADE)
+    source = models.CharField(
+        max_length=512,
+        choices=[(TWITTER, TWITTER), (SCHOLAR, SCHOLAR), (MANUAL, MANUAL)],
+        default=MANUAL,
+    )
+    user = models.ForeignKey(
+        User, related_name="short_term_interests", on_delete=models.CASCADE
+    )
     tweets = models.ManyToManyField(Tweet, related_name="tweet_short_term_models")
     papers = models.ManyToManyField(Paper, related_name="paper_short_term_models")
 
@@ -76,10 +86,14 @@ class LongTermInterest(models.Model):
     SCHOLAR = "Scholar"
     MANUAL = "Manual"
 
-    keyword = models.ForeignKey(Keyword, related_name="long_term_models", on_delete=models.CASCADE)
+    keyword = models.ForeignKey(
+        Keyword, related_name="long_term_models", on_delete=models.CASCADE
+    )
     weight = models.FloatField(default=1)
     source = models.CharField(max_length=512, default=MANUAL)
-    user = models.ForeignKey(User, related_name="long_term_interests", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, related_name="long_term_interests", on_delete=models.CASCADE
+    )
     tweets = models.ManyToManyField(Tweet, related_name="tweet_long_term_models")
     papers = models.ManyToManyField(Paper, related_name="paper_long_term_models")
 
@@ -88,8 +102,12 @@ class LongTermInterest(models.Model):
 
 
 class BlacklistedKeyword(models.Model):
-    keyword = models.ForeignKey(Keyword, related_name="blacklisted_preference", on_delete=models.CASCADE)
-    user = models.ForeignKey(User, related_name="blacklisted_keywords", on_delete=models.CASCADE)
+    keyword = models.ForeignKey(
+        Keyword, related_name="blacklisted_preference", on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        User, related_name="blacklisted_keywords", on_delete=models.CASCADE
+    )
 
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)

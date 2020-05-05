@@ -16,10 +16,19 @@ from .semantic_scholar import SemanticScholarAPI
 
 utc = pytz.timezone('UTC')
 
-@task(name="import_tweets", base=BaseCeleryTask, autoretry_for=(tweepy.RateLimitError,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
+
+@task(
+    name="import_tweets",
+    base=BaseCeleryTask,
+    autoretry_for=(tweepy.RateLimitError,),
+    retry_kwargs={'max_retries': 5, 'countdown': 30 * 60},
+)
 def import_tweets():
     for user in User.objects.exclude(twitter_account_id=None):
-        end_date = utc.localize(datetime.datetime.today() - datetime.timedelta(days=settings.TWITTER_FETCH_DAYS))
+        end_date = utc.localize(
+            datetime.datetime.today()
+            - datetime.timedelta(days=settings.TWITTER_FETCH_DAYS)
+        )
         if user.tweets.exists():
             end_date = user.tweets.order_by("-created_on").first().created_on
 
@@ -28,25 +37,31 @@ def import_tweets():
 
         tweet_objects = []
         for item in tweets:
-            tweet_objects.append(Tweet(
-              id_str=item.get("id_str", ""),
-                full_text=item.get("full_text", ""),
-                entities=json.dumps(item.get("entities", {})),
-                created_at=parser.parse(item["created_at"]),
-                user=user
-
-            ))
+            tweet_objects.append(
+                Tweet(
+                    id_str=item.get("id_str", ""),
+                    full_text=item.get("full_text", ""),
+                    entities=json.dumps(item.get("entities", {})),
+                    created_at=parser.parse(item["created_at"]),
+                    user=user,
+                )
+            )
         Tweet.objects.bulk_create(tweet_objects)
         print("Tweets import completed for {}".format(user.username))
 
 
-@task(name="import_papers", base=BaseCeleryTask, autoretry_for=(ConnectionRefusedError,), retry_kwargs={'max_retries': 5, 'countdown': 20*60})
+@task(
+    name="import_papers",
+    base=BaseCeleryTask,
+    autoretry_for=(ConnectionRefusedError,),
+    retry_kwargs={'max_retries': 5, 'countdown': 20 * 60},
+)
 def import_papers():
     for user in User.objects.exclude(author_id=None):
         current_year = datetime.datetime.now().year
         api = SemanticScholarAPI()
 
-        papers = api.get_user_papers(user, current_year-5, current_year)
+        papers = api.get_user_papers(user, current_year - 5, current_year)
         if not papers:
             continue
 
@@ -58,18 +73,25 @@ def import_papers():
                     "title": item.get("title", ""),
                     "url": item.get("url", ""),
                     "year": item.get("year"),
-                    "abstract": item.get("abstract")
-                }
+                    "abstract": item.get("abstract"),
+                },
             )
         print("Papers import completed for {}".format(user.username))
 
 
-@task(name="import_tweets_for_user", base=BaseCeleryTask, autoretry_for=(tweepy.RateLimitError,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
+@task(
+    name="import_tweets_for_user",
+    base=BaseCeleryTask,
+    autoretry_for=(tweepy.RateLimitError,),
+    retry_kwargs={'max_retries': 5, 'countdown': 30 * 60},
+)
 def import_tweets_for_user(user_id):
     user = User.objects.get(id=user_id)
-    if  not user.twitter_account_id:
+    if not user.twitter_account_id:
         return
-    end_date = utc.localize(datetime.datetime.today() - datetime.timedelta(days=settings.TWITTER_FETCH_DAYS))
+    end_date = utc.localize(
+        datetime.datetime.today() - datetime.timedelta(days=settings.TWITTER_FETCH_DAYS)
+    )
     if user.tweets.exists():
         end_date = user.tweets.order_by("-created_on").first().created_on
 
@@ -78,27 +100,33 @@ def import_tweets_for_user(user_id):
 
     tweet_objects = []
     for item in tweets:
-        tweet_objects.append(Tweet(
-          id_str=item.get("id_str", ""),
-            full_text=item.get("full_text", ""),
-            entities=json.dumps(item.get("entities", {})),
-            created_at=parser.parse(item["created_at"]),
-            user=user
-
-        ))
+        tweet_objects.append(
+            Tweet(
+                id_str=item.get("id_str", ""),
+                full_text=item.get("full_text", ""),
+                entities=json.dumps(item.get("entities", {})),
+                created_at=parser.parse(item["created_at"]),
+                user=user,
+            )
+        )
     Tweet.objects.bulk_create(tweet_objects)
     print("Tweets import completed for {}".format(user.username))
 
 
-@task(name="import_papers_for_user", base=BaseCeleryTask, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
+@task(
+    name="import_papers_for_user",
+    base=BaseCeleryTask,
+    autoretry_for=(Exception,),
+    retry_kwargs={'max_retries': 5, 'countdown': 30 * 60},
+)
 def import_papers_for_user(user_id):
     user = User.objects.get(id=user_id)
-    if  not user.author_id:
+    if not user.author_id:
         return
     current_year = datetime.datetime.now().year
     api = SemanticScholarAPI()
 
-    papers = api.get_user_papers(user, current_year-5, current_year)
+    papers = api.get_user_papers(user, current_year - 5, current_year)
 
     for item in papers:
         Paper.objects.update_or_create(
@@ -108,12 +136,18 @@ def import_papers_for_user(user_id):
                 "title": item.get("title", ""),
                 "url": item.get("url", ""),
                 "year": item.get("year"),
-                "abstract": item.get("abstract")
-            }
+                "abstract": item.get("abstract"),
+            },
         )
     print("Papers import completed for {}".format(user.username))
 
-@task(name="update_short_term_interest_model", base=BaseCeleryTask, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
+
+@task(
+    name="update_short_term_interest_model",
+    base=BaseCeleryTask,
+    autoretry_for=(Exception,),
+    retry_kwargs={'max_retries': 5, 'countdown': 30 * 60},
+)
 def update_short_term_interest_model():
     for user in User.objects.all():
         if user.twitter_account_id:
@@ -122,13 +156,23 @@ def update_short_term_interest_model():
             generate_short_term_model(user.id, ShortTermInterest.SCHOLAR)
 
 
-@task(name="update_long_term_interest_model", base=BaseCeleryTask, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
+@task(
+    name="update_long_term_interest_model",
+    base=BaseCeleryTask,
+    autoretry_for=(Exception,),
+    retry_kwargs={'max_retries': 5, 'countdown': 30 * 60},
+)
 def update_long_term_interest_model():
     for user in User.objects.all():
         generate_long_term_model(user.id)
 
 
-@task(name="update_short_term_interest_model_for_user", base=BaseCeleryTask, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
+@task(
+    name="update_short_term_interest_model_for_user",
+    base=BaseCeleryTask,
+    autoretry_for=(Exception,),
+    retry_kwargs={'max_retries': 5, 'countdown': 30 * 60},
+)
 def update_short_term_interest_model_for_user(user_id):
     user = User.objects.get(id=user_id)
     if user.twitter_account_id:
@@ -137,12 +181,22 @@ def update_short_term_interest_model_for_user(user_id):
         generate_short_term_model(user.id, ShortTermInterest.SCHOLAR)
 
 
-@task(name="update_long_term_interest_model_for_user", base=BaseCeleryTask, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
+@task(
+    name="update_long_term_interest_model_for_user",
+    base=BaseCeleryTask,
+    autoretry_for=(Exception,),
+    retry_kwargs={'max_retries': 5, 'countdown': 30 * 60},
+)
 def update_long_term_interest_model_for_user(user_id):
     generate_long_term_model(user_id)
 
 
-@task(name="import_user_data", base=BaseCeleryTask, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 30*60})
+@task(
+    name="import_user_data",
+    base=BaseCeleryTask,
+    autoretry_for=(Exception,),
+    retry_kwargs={'max_retries': 5, 'countdown': 30 * 60},
+)
 def import_user_data(user_id):
     print("importing tweets")
     import_tweets_for_user(user_id)

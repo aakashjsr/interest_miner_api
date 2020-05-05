@@ -9,7 +9,7 @@ from django.db.models import Q
 from . import serializers as accounts_serializers
 from . import models as accounts_models
 
-from interests.tasks import  import_user_data
+from interests.tasks import import_user_data
 
 
 class RegisterView(APIView):
@@ -57,6 +57,7 @@ class LogoutView(APIView):
         Token.objects.filter(user=request.user).delete()
         return Response({})
 
+
 class UserView(RetrieveUpdateAPIView):
     serializer_class = accounts_serializers.UserSerializer
 
@@ -69,7 +70,11 @@ class UserSuggestionView(ListAPIView):
 
     def get_queryset(self):
         term = self.kwargs.get("query")
-        return accounts_models.User.objects.filter(Q(email__icontains=term) | Q(first_name__icontains=term) | Q(last_name__icontains=term))
+        return accounts_models.User.objects.filter(
+            Q(email__icontains=term)
+            | Q(first_name__icontains=term)
+            | Q(last_name__icontains=term)
+        )
 
 
 class PublicProfileView(RetrieveAPIView):

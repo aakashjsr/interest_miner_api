@@ -16,39 +16,78 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Keyword',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('name', models.CharField(blank=True, max_length=1024, null=True)),
-                ('categories', models.ManyToManyField(related_name='keywords', to='interests.Category')),
+                (
+                    'categories',
+                    models.ManyToManyField(
+                        related_name='keywords', to='interests.Category'
+                    ),
+                ),
             ],
         ),
-        migrations.RemoveField(
-            model_name='longterminterest',
-            name='categories',
-        ),
-        migrations.RemoveField(
-            model_name='shortterminterest',
-            name='categories',
-        ),
+        migrations.RemoveField(model_name='longterminterest', name='categories',),
+        migrations.RemoveField(model_name='shortterminterest', name='categories',),
         migrations.AlterField(
             model_name='longterminterest',
             name='keyword',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, related_name='long_term_models', to='interests.Keyword'),
+            field=models.ForeignKey(
+                default=None,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='long_term_models',
+                to='interests.Keyword',
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
             model_name='shortterminterest',
             name='keyword',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, related_name='short_term_models', to='interests.Keyword'),
+            field=models.ForeignKey(
+                default=None,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='short_term_models',
+                to='interests.Keyword',
+            ),
             preserve_default=False,
         ),
         migrations.CreateModel(
             name='BlacklistedKeyword',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('updated_on', models.DateTimeField(auto_now=True)),
                 ('created_on', models.DateTimeField(auto_now_add=True)),
-                ('keyword', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='blacklisted_preference', to='interests.Keyword')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='blacklisted_keywords', to=settings.AUTH_USER_MODEL)),
+                (
+                    'keyword',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='blacklisted_preference',
+                        to='interests.Keyword',
+                    ),
+                ),
+                (
+                    'user',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='blacklisted_keywords',
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

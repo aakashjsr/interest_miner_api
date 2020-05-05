@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class TaskLog(models.Model):
     RUNNING = "running"
     COMPLETED = "completed"
@@ -36,23 +37,36 @@ class TriggerTask(models.Model):
     UPDATE_SHORT_TERM_MODEL_FOR_USER = "UPDATE_SHORT_TERM_MODEL_FOR_USER"
     UPDATE_LONG_TERM_MODEL_FOR_USER = "UPDATE_LONG_TERM_MODEL_FOR_USER"
 
-    task_type = models.CharField(max_length=255, choices=[
-        (IMPORT_TWEETS, IMPORT_TWEETS),
-        (IMPORT_PAPERS, IMPORT_PAPERS),
-        (IMPORT_TWEETS_FOR_USER, IMPORT_TWEETS_FOR_USER),
-        (IMPORT_PAPERS_FOR_USER, IMPORT_PAPERS_FOR_USER),
-        (UPDATE_SHORT_TERM_MODEL, UPDATE_SHORT_TERM_MODEL),
-        (UPDATE_LONG_TERM_MODEL, UPDATE_LONG_TERM_MODEL),
-        (UPDATE_SHORT_TERM_MODEL_FOR_USER, UPDATE_SHORT_TERM_MODEL_FOR_USER),
-        (UPDATE_LONG_TERM_MODEL_FOR_USER, UPDATE_LONG_TERM_MODEL_FOR_USER),
-    ])
+    task_type = models.CharField(
+        max_length=255,
+        choices=[
+            (IMPORT_TWEETS, IMPORT_TWEETS),
+            (IMPORT_PAPERS, IMPORT_PAPERS),
+            (IMPORT_TWEETS_FOR_USER, IMPORT_TWEETS_FOR_USER),
+            (IMPORT_PAPERS_FOR_USER, IMPORT_PAPERS_FOR_USER),
+            (UPDATE_SHORT_TERM_MODEL, UPDATE_SHORT_TERM_MODEL),
+            (UPDATE_LONG_TERM_MODEL, UPDATE_LONG_TERM_MODEL),
+            (UPDATE_SHORT_TERM_MODEL_FOR_USER, UPDATE_SHORT_TERM_MODEL_FOR_USER),
+            (UPDATE_LONG_TERM_MODEL_FOR_USER, UPDATE_LONG_TERM_MODEL_FOR_USER),
+        ],
+    )
     user_id = models.IntegerField(null=True, blank=True)
 
     updated_at = models.DateTimeField(auto_now=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def save(self, *args, **kwargs):
-        from interests.tasks import import_tweets, import_papers, import_tweets_for_user, import_papers_for_user, update_short_term_interest_model, update_long_term_interest_model, update_short_term_interest_model_for_user, update_long_term_interest_model_for_user
+        from interests.tasks import (
+            import_tweets,
+            import_papers,
+            import_tweets_for_user,
+            import_papers_for_user,
+            update_short_term_interest_model,
+            update_long_term_interest_model,
+            update_short_term_interest_model_for_user,
+            update_long_term_interest_model_for_user,
+        )
+
         job_map = {
             self.IMPORT_TWEETS: import_tweets,
             self.IMPORT_PAPERS: import_papers,

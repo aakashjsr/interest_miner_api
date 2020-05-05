@@ -13,6 +13,7 @@ services:
       TWITTER_ACCESS_TOKEN: ${TWITTER_ACCESS_TOKEN}
       TWITTER_ACCESS_TOKEN_SECRET: ${TWITTER_ACCESS_TOKEN_SECRET}
       TWITTER_FETCH_DAYS: ${TWITTER_FETCH_DAYS}
+      PRELOAD_GLOVE_MODEL: "true"
     depends_on:
       - "db"
       - "redis"

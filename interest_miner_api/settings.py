@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'common',
     'accounts',
-    'interests'
+    'interests',
 ]
 
 
@@ -123,15 +123,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
 
@@ -155,7 +149,9 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
-TWITTER_FETCH_DAYS = int(os.environ.get("TWITTER_FETCH_DAYS", 180)) # No of days for which the tweets needs to be imported
+TWITTER_FETCH_DAYS = int(
+    os.environ.get("TWITTER_FETCH_DAYS", 180)
+)  # No of days for which the tweets needs to be imported
 
 # Celery settings
 REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
@@ -168,5 +164,5 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERYD_TASK_SOFT_TIME_LIMIT = 60 * 60  # 1 hour timeout
 
 # preload data models
-if os.environ.get("BACKGROUND_ENV") == "web":
+if bool(os.environ.get("PRELOAD_GLOVE_MODEL", False)):
     from interests.Semantic_Similarity.Word_Embedding.data_models import glove_model

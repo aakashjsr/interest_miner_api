@@ -14,21 +14,45 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='longterminterest',
             name='paper',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='paper_long_term_models', to='interests.Paper'),
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='paper_long_term_models',
+                to='interests.Paper',
+            ),
         ),
         migrations.AddField(
             model_name='longterminterest',
             name='tweet',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='tweet_long_term_models', to='interests.Tweet'),
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='tweet_long_term_models',
+                to='interests.Tweet',
+            ),
         ),
         migrations.AddField(
             model_name='shortterminterest',
             name='paper',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='paper_short_term_models', to='interests.Paper'),
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='paper_short_term_models',
+                to='interests.Paper',
+            ),
         ),
         migrations.AddField(
             model_name='shortterminterest',
             name='tweet',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='tweet_short_term_models', to='interests.Tweet'),
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='tweet_short_term_models',
+                to='interests.Tweet',
+            ),
         ),
     ]

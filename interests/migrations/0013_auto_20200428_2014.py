@@ -22,43 +22,37 @@ class Migration(migrations.Migration):
             field=models.IntegerField(default=2020),
             preserve_default=False,
         ),
-        migrations.RemoveField(
-            model_name='longterminterest',
-            name='paper',
-        ),
+        migrations.RemoveField(model_name='longterminterest', name='paper',),
         migrations.AddField(
             model_name='longterminterest',
             name='paper',
-            field=models.ManyToManyField(related_name='paper_long_term_models', to='interests.Paper'),
+            field=models.ManyToManyField(
+                related_name='paper_long_term_models', to='interests.Paper'
+            ),
         ),
-        migrations.RemoveField(
-            model_name='longterminterest',
-            name='tweet',
-        ),
+        migrations.RemoveField(model_name='longterminterest', name='tweet',),
         migrations.AddField(
             model_name='longterminterest',
             name='tweet',
-            field=models.ManyToManyField(related_name='tweet_long_term_models', to='interests.Tweet'),
+            field=models.ManyToManyField(
+                related_name='tweet_long_term_models', to='interests.Tweet'
+            ),
         ),
-        migrations.RemoveField(
-            model_name='shortterminterest',
-            name='paper',
-        ),
+        migrations.RemoveField(model_name='shortterminterest', name='paper',),
         migrations.AddField(
             model_name='shortterminterest',
             name='paper',
-            field=models.ManyToManyField(related_name='paper_short_term_models', to='interests.Paper'),
+            field=models.ManyToManyField(
+                related_name='paper_short_term_models', to='interests.Paper'
+            ),
         ),
-        migrations.RemoveField(
-            model_name='shortterminterest',
-            name='tweet',
-        ),
+        migrations.RemoveField(model_name='shortterminterest', name='tweet',),
         migrations.AddField(
             model_name='shortterminterest',
             name='tweet',
-            field=models.ManyToManyField(related_name='tweet_short_term_models', to='interests.Tweet'),
+            field=models.ManyToManyField(
+                related_name='tweet_short_term_models', to='interests.Tweet'
+            ),
         ),
-        migrations.DeleteModel(
-            name='InterestTrend',
-        ),
+        migrations.DeleteModel(name='InterestTrend',),
     ]

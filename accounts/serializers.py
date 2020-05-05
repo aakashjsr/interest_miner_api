@@ -19,7 +19,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = account_models.User
-        fields = ("email", "first_name", "last_name", "id", "twitter_account_id", "author_id", "paper_count", "tweet_count", "keyword_count")
+        fields = (
+            "email",
+            "first_name",
+            "last_name",
+            "id",
+            "twitter_account_id",
+            "author_id",
+            "paper_count",
+            "tweet_count",
+            "keyword_count",
+        )
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):

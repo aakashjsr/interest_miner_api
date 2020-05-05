@@ -16,14 +16,36 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='InterestTrend',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('month', models.IntegerField()),
                 ('year', models.IntegerField()),
                 ('weight', models.FloatField(default=1)),
                 ('updated_on', models.DateTimeField(auto_now=True)),
                 ('created_on', models.DateTimeField(auto_now_add=True)),
-                ('keyword', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tends', to='interests.Keyword')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='trends', to=settings.AUTH_USER_MODEL)),
+                (
+                    'keyword',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='tends',
+                        to='interests.Keyword',
+                    ),
+                ),
+                (
+                    'user',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='trends',
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

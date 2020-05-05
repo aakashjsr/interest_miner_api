@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import TaskLog, TriggerTask
 
+
 class TaskAdmin(admin.ModelAdmin):
     list_display = ("name", "status", "started_on", "ended_on", "duration_seconds")
     list_filter = ("name", "status", "started_on", "ended_on")

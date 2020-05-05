@@ -216,7 +216,5 @@ class Rake(object):
         groups = groupby(word_list, lambda x: x not in self.to_ignore)
         phrases = [tuple(group[1]) for group in groups if group[0]]
         return list(
-            filter(
-                lambda x: self.min_length <= len(x) <= self.max_length, phrases
-            )
+            filter(lambda x: self.min_length <= len(x) <= self.max_length, phrases)
         )

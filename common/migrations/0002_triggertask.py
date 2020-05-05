@@ -13,7 +13,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TriggerTask',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('task_type', models.CharField(max_length=255)),
                 ('user_id', models.IntegerField(blank=True, null=True)),
                 ('updated_at', models.DateTimeField(auto_now=True, db_index=True)),

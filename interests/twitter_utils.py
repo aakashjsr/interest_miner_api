@@ -4,6 +4,7 @@ import os
 
 utc = pytz.timezone('UTC')
 
+
 class TwitterAPI:
     def __init__(self, user_account_id, end_date):
         consumer_key = os.environ.get("TWITTER_CONSUMER_KEY")
@@ -13,7 +14,9 @@ class TwitterAPI:
 
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_token_secret)
-        self.auth_api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+        self.auth_api = tweepy.API(
+            auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True
+        )
         self.target = user_account_id
 
         self.end_date = end_date
@@ -27,12 +30,20 @@ class TwitterAPI:
         print("Current Rate: {} (starting)".format(self.get_fetch_tweet_limit()))
         tweets = []
         tweet_count = 0
-        for tweet in tweepy.Cursor(self.auth_api.user_timeline, id=self.target, tweet_mode="extended", wait_on_rate_limit=True, wait_on_rate_limit_notify=True).items():
+        for tweet in tweepy.Cursor(
+            self.auth_api.user_timeline,
+            id=self.target,
+            tweet_mode="extended",
+            wait_on_rate_limit=True,
+            wait_on_rate_limit_notify=True,
+        ).items():
             tweet_count += 1
             tweet_ct = utc.localize(tweet.created_at)
             if tweet_ct > self.end_date:
                 tweets.append(tweet._json)
-                print("Imported {} tweets for account {}".format(tweet_count, self.target))
+                print(
+                    "Imported {} tweets for account {}".format(tweet_count, self.target)
+                )
             else:
                 break
         print("Current Rate: {} (ending)".format(self.get_fetch_tweet_limit()))
