@@ -4,8 +4,8 @@ from gensim.models.keyedvectors import KeyedVectors
 from gensim.models.wrappers import FastText
 from nltk.corpus import stopwords
 
-
-from interests.Semantic_Similarity.Word_Embedding.data_models import glove_model
+if os.environ.get("BACKGROUND_ENV") == "web":
+    from interests.Semantic_Similarity.Word_Embedding.data_models import glove_model
 
 
 def calculate_similarity(source_doc, target_doc, embedding="Glove", threshold=0):
