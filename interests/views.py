@@ -3,6 +3,7 @@ import monthdelta
 from collections import OrderedDict
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
@@ -13,6 +14,7 @@ from rest_framework.generics import (
 from rest_framework.response import Response
 from interests.Keyword_Extractor.extractor import getKeyword
 from interests.wikipedia_utils import wikifilter
+from interests.update_interests import normalize
 
 from .serializers import (
     PaperSerializer,
@@ -206,12 +208,16 @@ class SimilarityView(RetrieveAPIView):
         return Response({"score": score})
 
 
-class PublicInterestExtractionView(APIView):
+class PublicInterestExtractionView(GenericAPIView):
+    """
+    Extracts keywords from the specified text based on the selected algorithm
+    """
     authentication_classes = ()
     permission_classes = ()
+    serializer_class = InterestExtractionSerializer
 
     def post(self, request, *args, **kwargs):
-        inputs = InterestExtractionSerializer(data=request.data)
+        inputs = self.serializer_class(data=request.data)
         inputs.is_valid(raise_exception=True)
         payload = inputs.validated_data
         keyword_weight_mapping = getKeyword(
@@ -221,15 +227,20 @@ class PublicInterestExtractionView(APIView):
             wiki_keyword_redirect_mapping, keyword_weight_mapping = wikifilter(
                 keyword_weight_mapping
             )
+        keywords = normalize(keyword_weight_mapping)
         return Response(keyword_weight_mapping)
 
 
-class PublicKeywordSimilarityView(APIView):
+class PublicKeywordSimilarityView(GenericAPIView):
+    """
+    Returns the similarity score for 2 sets of keywords based on the selected Algorithm
+    """
     authentication_classes = ()
     permission_classes = ()
+    serializer_class = KeywordSimilariySerializer
 
     def post(self, request, *args, **kwargs):
-        inputs = KeywordSimilariySerializer(data=request.data)
+        inputs = self.serializer_class(data=request.data)
         inputs.is_valid(raise_exception=True)
         payload = inputs.validated_data
         score = get_interest_similarity_score(

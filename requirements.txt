@@ -60,3 +60,4 @@ zipp==3.1.0
 pattern
 monthdelta
 gensim==3.8.2
+drf-yasg==1.17.1
