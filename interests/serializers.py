@@ -99,7 +99,16 @@ class ListDataSerializer(serializers.Serializer):
 class InterestExtractionSerializer(serializers.Serializer):
     text = serializers.CharField()
     algorithm = serializers.ChoiceField(
-        choices=[("Yake", "Yake"), ("SingleRank", "SingleRank")]
+        choices=[
+            ("Yake", "Yake"),
+            ("SingleRank", "SingleRank"),
+            ("TopicRank", "TopicRank"),
+            ("TextRank", "TextRank"),
+            ("PositionRank", "PositionRank"),
+            ("Rake", "Rake"),
+            ("MultipartiteRank", "MultipartiteRank"),
+            ("TopicalPageRank", "TopicalPageRank"),
+        ]
     )
     wiki_filter = serializers.BooleanField(default=True)
     num_of_keywords = serializers.IntegerField(default=20)

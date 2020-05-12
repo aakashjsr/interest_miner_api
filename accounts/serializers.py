@@ -6,10 +6,7 @@ from interests.models import ShortTermInterest
 class UserSerializer(serializers.ModelSerializer):
     paper_count = serializers.SerializerMethodField()
     tweet_count = serializers.SerializerMethodField()
-    keyword_count = serializers.SerializerMethodField()
 
-    def get_keyword_count(self, instance):
-        return ShortTermInterest.objects.filter(user=instance).count()
 
     def get_tweet_count(self, instance):
         return instance.tweets.count()
@@ -27,8 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
             "twitter_account_id",
             "author_id",
             "paper_count",
-            "tweet_count",
-            "keyword_count",
+            "tweet_count"
         )
 
 

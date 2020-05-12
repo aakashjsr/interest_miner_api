@@ -38,3 +38,25 @@ def update_interest_models(x, y):
     updated_interest_model = normalize(updated)
 
     return updated_interest_model
+
+
+def interest_aggregator(x, y):
+    '''
+    This function is used to aggregate the paper interests and tweet interests
+    '''
+
+    for k in x.keys():
+        x[k] = x[k] * 0.6
+
+    for k in y.keys():
+        y[k] = y[k] * 0.4
+
+    for k, v in x.items():
+        if k in y.keys():
+            y[k] += v
+        else:
+            y[k] = v
+
+    final_interest_model = normalize(y)
+
+    return final_interest_model
