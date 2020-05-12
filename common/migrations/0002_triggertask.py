@@ -5,9 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('common', '0001_initial'),
-    ]
+    dependencies = [('common', '0001_initial')]
 
     operations = [
         migrations.CreateModel(
@@ -27,5 +25,5 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True, db_index=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
             ],
-        ),
+        )
     ]

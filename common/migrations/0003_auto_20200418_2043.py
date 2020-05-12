@@ -5,9 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('common', '0002_triggertask'),
-    ]
+    dependencies = [('common', '0002_triggertask')]
 
     operations = [
         migrations.AlterField(
@@ -32,5 +30,5 @@ class Migration(migrations.Migration):
                 ],
                 max_length=255,
             ),
-        ),
+        )
     ]

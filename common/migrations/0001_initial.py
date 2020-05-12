@@ -48,6 +48,6 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True, db_index=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
             ],
-            options={'verbose_name_plural': 'Task Logs',},
-        ),
+            options={'verbose_name_plural': 'Task Logs'},
+        )
     ]

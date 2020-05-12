@@ -36,6 +36,7 @@ class TriggerTask(models.Model):
     UPDATE_LONG_TERM_MODEL = "UPDATE_LONG_TERM_MODEL"
     UPDATE_SHORT_TERM_MODEL_FOR_USER = "UPDATE_SHORT_TERM_MODEL_FOR_USER"
     UPDATE_LONG_TERM_MODEL_FOR_USER = "UPDATE_LONG_TERM_MODEL_FOR_USER"
+    IMPORT_ALL_DATA = "IMPORT_ALL_DATA"
 
     task_type = models.CharField(
         max_length=255,
@@ -48,6 +49,7 @@ class TriggerTask(models.Model):
             (UPDATE_LONG_TERM_MODEL, UPDATE_LONG_TERM_MODEL),
             (UPDATE_SHORT_TERM_MODEL_FOR_USER, UPDATE_SHORT_TERM_MODEL_FOR_USER),
             (UPDATE_LONG_TERM_MODEL_FOR_USER, UPDATE_LONG_TERM_MODEL_FOR_USER),
+            (IMPORT_ALL_DATA, IMPORT_ALL_DATA),
         ],
     )
     user_id = models.IntegerField(null=True, blank=True)
@@ -65,6 +67,7 @@ class TriggerTask(models.Model):
             update_long_term_interest_model,
             update_short_term_interest_model_for_user,
             update_long_term_interest_model_for_user,
+            import_user_data,
         )
 
         job_map = {
@@ -76,6 +79,7 @@ class TriggerTask(models.Model):
             self.UPDATE_LONG_TERM_MODEL: update_long_term_interest_model,
             self.UPDATE_SHORT_TERM_MODEL_FOR_USER: update_short_term_interest_model_for_user,
             self.UPDATE_LONG_TERM_MODEL_FOR_USER: update_long_term_interest_model_for_user,
+            self.IMPORT_ALL_DATA: import_user_data,
         }
         if self.user_id:
             job_map[self.task_type].delay(self.user_id)

@@ -14,20 +14,16 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RenameField(
-            model_name='longterminterest', old_name='created_at', new_name='created_on',
+            model_name='longterminterest', old_name='created_at', new_name='created_on'
         ),
         migrations.RenameField(
-            model_name='longterminterest', old_name='updated_at', new_name='updated_on',
+            model_name='longterminterest', old_name='updated_at', new_name='updated_on'
         ),
         migrations.RenameField(
-            model_name='shortterminterest',
-            old_name='created_at',
-            new_name='created_on',
+            model_name='shortterminterest', old_name='created_at', new_name='created_on'
         ),
         migrations.RenameField(
-            model_name='shortterminterest',
-            old_name='updated_at',
-            new_name='updated_on',
+            model_name='shortterminterest', old_name='updated_at', new_name='updated_on'
         ),
         migrations.CreateModel(
             name='Tweet',

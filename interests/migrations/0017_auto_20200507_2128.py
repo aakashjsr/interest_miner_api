@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('interests', '0016_auto_20200428_2126'),
-    ]
+    dependencies = [('interests', '0016_auto_20200428_2126')]
 
     operations = [
         migrations.AlterField(
             model_name='longterminterest',
             name='source',
             field=models.CharField(default='Manual', max_length=512),
-        ),
+        )
     ]

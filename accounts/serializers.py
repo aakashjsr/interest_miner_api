@@ -7,7 +7,6 @@ class UserSerializer(serializers.ModelSerializer):
     paper_count = serializers.SerializerMethodField()
     tweet_count = serializers.SerializerMethodField()
 
-
     def get_tweet_count(self, instance):
         return instance.tweets.count()
 
@@ -24,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
             "twitter_account_id",
             "author_id",
             "paper_count",
-            "tweet_count"
+            "tweet_count",
         )
 
 

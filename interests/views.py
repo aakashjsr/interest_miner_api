@@ -34,7 +34,7 @@ from .models import (
     LongTermInterest,
 )
 from accounts.models import User
-from .utils import get_interest_similarity_score
+from .utils import get_interest_similarity_score, get_top_long_term_interest_by_weight, get_top_short_term_interest_by_weight
 
 
 class LongTermInterestView(ListCreateAPIView):
@@ -75,33 +75,6 @@ class LongTermInterestItemView(RetrieveUpdateDestroyAPIView):
         return super().perform_destroy(instance)
 
 
-class ShortTermInterestView(ListAPIView):
-    serializer_class = ShortTermInterestSerializer
-
-    def get_queryset(self):
-        order_key = (
-            "created_on" if self.request.GET.get("order") == "date" else "-weight"
-        )
-        today = datetime.date.today()
-        return self.request.user.short_term_interests.filter(
-            model_month=today.month, model_year=today.year
-        ).order_by(order_key)[:5]
-
-
-class ActivityStatsView(APIView):
-    def get(self, request, *args, **kwargs):
-        paper_data = OrderedDict()
-        tweet_data = OrderedDict()
-
-        for paper in Paper.objects.filter(user=request.user).order_by("year"):
-            key_name = paper.year
-            paper_data[key_name] = paper_data.get(key_name, 0) + 1
-
-        for tweet in Tweet.objects.filter(user=request.user).order_by("created_at"):
-            key_name = tweet.created_at.strftime("%B %Y")
-            tweet_data[key_name] = tweet_data.get(key_name, 0) + 1
-        return Response({"papers": paper_data, "tweets": tweet_data})
-
 
 class PaperView(ListCreateAPIView):
     serializer_class = PaperSerializer
@@ -133,58 +106,6 @@ class UserBlacklistedKeywordItemView(DestroyAPIView):
         return self.request.user.blacklisted_keywords.all().order_by("name")
 
 
-class StreamGraphView(APIView):
-    def get(self, request, *args, **kwargs):
-        # get top 10 keywords for twitter
-        twitter_data = OrderedDict()
-        scholar_data = OrderedDict()
-        today = datetime.date.today()
-
-        top_twitter_keywords = list(
-            ShortTermInterest.objects.filter(
-                user=request.user, source=ShortTermInterest.TWITTER
-            )
-            .order_by("-weight")
-            .values_list("keyword__name", flat=True)
-        )
-        top_twitter_keywords = list(set(top_twitter_keywords))[:10]
-
-        top_paper_keywords = list(
-            ShortTermInterest.objects.filter(
-                user=request.user, source=ShortTermInterest.SCHOLAR
-            )
-            .order_by("-weight")
-            .values_list("keyword__name", flat=True)
-        )
-        top_paper_keywords = list(set(top_paper_keywords))[:10]
-
-        for index in range(5, -1, -1):
-            # data for last 6 months
-            date = today - monthdelta.monthdelta(months=index)
-            twitter_data[date.strftime("%B %Y")] = list(
-                ShortTermInterest.objects.filter(
-                    model_month=date.month,
-                    model_year=date.year,
-                    user=request.user,
-                    source=ShortTermInterest.TWITTER,
-                    keyword__name__in=top_twitter_keywords,
-                ).values("keyword__name", "weight")
-            )
-
-        for index in range(4, -1, -1):
-            # data for last 5 years
-            year = today.year - index
-            scholar_data[str(year)] = list(
-                ShortTermInterest.objects.filter(
-                    model_year=year,
-                    user=request.user,
-                    source=ShortTermInterest.SCHOLAR,
-                    keyword__name__in=top_paper_keywords,
-                ).values("keyword__name", "weight")
-            )
-        response_data = {"twitter_data": twitter_data, "paper_data": scholar_data}
-        return Response(response_data)
-
 
 class SimilarityView(RetrieveAPIView):
     def get_queryset(self):
@@ -212,6 +133,7 @@ class PublicInterestExtractionView(GenericAPIView):
     """
     Extracts keywords from the specified text based on the selected algorithm
     """
+
     authentication_classes = ()
     permission_classes = ()
     serializer_class = InterestExtractionSerializer
@@ -235,6 +157,7 @@ class PublicKeywordSimilarityView(GenericAPIView):
     """
     Returns the similarity score for 2 sets of keywords based on the selected Algorithm
     """
+
     authentication_classes = ()
     permission_classes = ()
     serializer_class = KeywordSimilariySerializer
@@ -307,10 +230,7 @@ class UserLongTermInterestView(ListAPIView):
 
     def get_queryset(self):
         user = get_object_or_404(User, pk=self.kwargs["pk"])
-        order_key = (
-            "created_on" if self.request.GET.get("order") == "date" else "-weight"
-        )
-        return user.long_term_interests.all().order_by(order_key)
+        return get_top_long_term_interest_by_weight(user.id, 15)
 
 
 class UserShortTermInterestView(ListAPIView):
@@ -318,13 +238,8 @@ class UserShortTermInterestView(ListAPIView):
 
     def get_queryset(self):
         user = get_object_or_404(User, pk=self.kwargs["pk"])
-        order_key = (
-            "created_on" if self.request.GET.get("order") == "date" else "-weight"
-        )
-        today = datetime.date.today()
-        return user.short_term_interests.filter(
-            model_month=today.month, model_year=today.year
-        ).order_by(order_key)[:5]
+        return get_top_short_term_interest_by_weight(user.id, 5)
+
 
 
 class UserActivityStatsView(APIView):

@@ -34,8 +34,8 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
-        migrations.RemoveField(model_name='longterminterest', name='categories',),
-        migrations.RemoveField(model_name='shortterminterest', name='categories',),
+        migrations.RemoveField(model_name='longterminterest', name='categories'),
+        migrations.RemoveField(model_name='shortterminterest', name='categories'),
         migrations.AlterField(
             model_name='longterminterest',
             name='keyword',

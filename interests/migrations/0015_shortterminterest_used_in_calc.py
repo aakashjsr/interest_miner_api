@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('interests', '0014_auto_20200428_2033'),
-    ]
+    dependencies = [('interests', '0014_auto_20200428_2033')]
 
     operations = [
         migrations.AddField(
             model_name='shortterminterest',
             name='used_in_calc',
             field=models.BooleanField(default=False),
-        ),
+        )
     ]

@@ -6,9 +6,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('interests', '0011_interesttrend'),
-    ]
+    dependencies = [('interests', '0011_interesttrend')]
 
     operations = [
         migrations.AddField(

@@ -102,7 +102,7 @@ def generate_short_term_model(user_id, source):
                 continue
             keywords = normalize(keyword_weight_mapping)
             for keyword, weight in keywords.items():
-                keyword = wiki_keyword_redirect_mapping.get(keyword, keyword)
+                # keyword = wiki_keyword_redirect_mapping.get(keyword, keyword)
                 keyword = keyword.lower()
                 if keyword in blacklisted_keywords:
                     print("Skipping {} as its blacklisted".format(keyword))
@@ -151,7 +151,7 @@ def generate_short_term_model(user_id, source):
                 continue
             keywords = normalize(keyword_weight_mapping)
             for keyword, weight in keywords.items():
-                keyword = wiki_keyword_redirect_mapping.get(keyword, keyword)
+                # keyword = wiki_keyword_redirect_mapping.get(keyword, keyword)
                 keyword = keyword.lower()
                 if keyword in blacklisted_keywords:
                     print("Skipping {} as its blacklisted".format(keyword))
@@ -189,3 +189,87 @@ def get_interest_similarity_score(
         return calculate_similarity(keyword_list_1, keyword_list_2, embedding="Glove")
     else:
         return wikisim(keyword_list_1, keyword_list_2)
+
+
+def get_top_short_term_interest_by_weight(user_id, count=10):
+    paper_weight = 0.6
+    paper_limit = int(count * paper_weight)
+    tweet_limit = count - paper_limit
+    today = datetime.date.today()
+    date_filtered_qs = (
+        ShortTermInterest.objects.filter(
+            user_id=user_id, model_month=today.month, model_year=today.year
+        )
+        .prefetch_related("tweets", "papers", "keyword")
+        .order_by("-weight")
+    )
+    tweet_model_ids = set(
+        date_filtered_qs.filter(source=ShortTermInterest.TWITTER).values_list(
+            "id", flat=True
+        )
+    )
+    paper_model_ids = set(
+        date_filtered_qs.filter(source=ShortTermInterest.SCHOLAR).values_list(
+            "id", flat=True
+        )
+    )
+    final_model_ids = set()
+    final_model_ids = final_model_ids.union(
+        set(list(paper_model_ids)[:paper_limit])
+    ).union(set(list(tweet_model_ids)[:tweet_limit]))
+
+    if len(final_model_ids) < count:
+        # Add more papers
+        new_paper_ids = list(paper_model_ids.difference(final_model_ids))
+        final_model_ids = final_model_ids.union(
+            set(new_paper_ids[: count - len(final_model_ids)])
+        )
+
+    if len(final_model_ids) < count:
+        # Add more tweets
+        new_tweet_ids = list(tweet_model_ids.difference(final_model_ids))
+        final_model_ids = final_model_ids.union(
+            set(new_tweet_ids[: count - len(final_model_ids)])
+        )
+
+    return date_filtered_qs.filter(id__in=final_model_ids)
+
+def get_top_long_term_interest_by_weight(user_id, count=10):
+    paper_weight = 0.6
+    paper_limit = int(count * paper_weight)
+    tweet_limit = count - paper_limit
+
+    date_filtered_qs = (
+        LongTermInterest.objects.filter(user_id=user_id).prefetch_related("tweets", "papers", "keyword").order_by("-weight")
+    )
+    tweet_model_ids = set(
+        date_filtered_qs.filter(source__icontains=ShortTermInterest.TWITTER).values_list(
+            "id", flat=True
+        )
+    )
+    paper_model_ids = set(
+        date_filtered_qs.filter(source__icontains=ShortTermInterest.SCHOLAR).values_list(
+            "id", flat=True
+        )
+    )
+    final_model_ids = set()
+    final_model_ids = final_model_ids.union(
+        set(list(paper_model_ids)[:paper_limit])
+    ).union(set(list(tweet_model_ids)[:tweet_limit]))
+
+    if len(final_model_ids) < count:
+        # Add more papers
+        new_paper_ids = list(paper_model_ids.difference(final_model_ids))
+        final_model_ids = final_model_ids.union(
+            set(new_paper_ids[: count - len(final_model_ids)])
+        )
+
+    if len(final_model_ids) < count:
+        # Add more tweets
+        new_tweet_ids = list(tweet_model_ids.difference(final_model_ids))
+        final_model_ids = final_model_ids.union(
+            set(new_tweet_ids[: count - len(final_model_ids)])
+        )
+
+    return date_filtered_qs.filter(id__in=final_model_ids)
+

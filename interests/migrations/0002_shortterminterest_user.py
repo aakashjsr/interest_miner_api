@@ -23,5 +23,5 @@ class Migration(migrations.Migration):
                 to=settings.AUTH_USER_MODEL,
             ),
             preserve_default=False,
-        ),
+        )
     ]

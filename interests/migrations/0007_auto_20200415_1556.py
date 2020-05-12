@@ -5,9 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('interests', '0006_auto_20200415_1414'),
-    ]
+    dependencies = [('interests', '0006_auto_20200415_1414')]
 
     operations = [
         migrations.AlterField(
@@ -15,5 +13,5 @@ class Migration(migrations.Migration):
             name='name',
             field=models.CharField(default='', max_length=1024),
             preserve_default=False,
-        ),
+        )
     ]
