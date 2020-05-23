@@ -34,7 +34,13 @@ from .models import (
     LongTermInterest,
 )
 from accounts.models import User
-from .utils import get_interest_similarity_score, get_top_long_term_interest_by_weight, get_top_short_term_interest_by_weight
+from .utils import get_interest_similarity_score, get_top_long_term_interest_by_weight, get_top_short_term_interest_by_weight, get_radar_similarity_data
+from interests.tasks import import_user_data
+
+class TriggerDataUpdate(APIView):
+    def post(self, request, *args, **kwargs):
+        import_user_data.delay(request.user.id)
+        return Response({})
 
 
 class LongTermInterestView(ListCreateAPIView):
@@ -56,6 +62,8 @@ class LongTermInterestView(ListCreateAPIView):
             LongTermInterest.objects.update_or_create(
                 user=request.user, keyword=keyword_obj, defaults={"weight": weight}
             )
+            # Clear this keyword from blacklist
+            BlacklistedKeyword.objects.filter(user=request.user, keyword=keyword_obj).delete()
         return Response({})
 
 
@@ -126,7 +134,14 @@ class SimilarityView(RetrieveAPIView):
                 score = 'N/A'
             else:
                 score = round(float(score) * 100, 2)
-        return Response({"score": score})
+
+        # compute data for radar chart
+        user_1_interests = {item.keyword.name: item.weight for item in LongTermInterest.objects.filter(user=request.user).order_by("-weight")[:5]}
+        user_2_interests = {item.keyword.name: item.weight for item in LongTermInterest.objects.filter(user=user).order_by("-weight")[:5]}
+
+        data = get_radar_similarity_data(user_1_interests, user_2_interests)
+
+        return Response({"score": score, "user_1_data": data["user_1_data"], "user_2_data": data["user_2_data"]})
 
 
 class PublicInterestExtractionView(GenericAPIView):

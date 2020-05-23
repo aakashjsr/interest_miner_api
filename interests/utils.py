@@ -1,5 +1,6 @@
 import datetime
 
+from django.db.models import Q
 from interests.models import (
     Tweet,
     Paper,
@@ -9,6 +10,7 @@ from interests.models import (
     Category,
     BlacklistedKeyword,
 )
+import numpy as np
 from interests.Keyword_Extractor.extractor import getKeyword
 from interests.wikipedia_utils import wikicategory, wikifilter
 from interests.update_interests import update_interest_models, normalize
@@ -59,7 +61,7 @@ def generate_long_term_model(user_id):
         paper_list = [
             paper
             for paper in Paper.objects.filter(
-                user_id=user_id, abstract__icontains=keyword.lower()
+                Q(user_id=user_id) & (Q(abstract__icontains=keyword.lower()) | Q(title__icontains=keyword.lower()))
             )
         ]
         if tweet_list:
@@ -83,10 +85,19 @@ def generate_short_term_model(user_id, source):
     )
 
     if source == ShortTermInterest.TWITTER:
-        for tweet in Tweet.objects.filter(user_id=user_id, used_in_calc=False):
-            print(f"Extracting keywords from tweet id {tweet.id}")
+        tweet_candidates = Tweet.objects.filter(user_id=user_id, used_in_calc=False)
+        month_wise_text = {}
+
+        for tweet in tweet_candidates:
+            key = f"{tweet.created_at.month}_{tweet.created_at.year}"
+            if key not in month_wise_text:
+                month_wise_text[key] = ""
+            month_wise_text[key] = f"{month_wise_text[key]} {tweet.full_text}"
+
+        for key, text in month_wise_text.items():
+            month, year = key.split("_")
             try:
-                keywords = getKeyword(tweet.full_text or "", model="Yake", num=20)
+                keywords = getKeyword(text or "", model="Yake", num=20)
             except:
                 # silencing errors like
                 # interests/Keyword_Extractor/utils/datarepresentation.py:106: RuntimeWarning: Mean of empty slice
@@ -123,19 +134,26 @@ def generate_short_term_model(user_id, source):
                 s_interest, _ = ShortTermInterest.objects.update_or_create(
                     user_id=user_id,
                     keyword=keyword_instance,
-                    model_month=tweet.created_at.month,
-                    model_year=tweet.created_at.year,
+                    model_month=month,
+                    model_year=year,
                     defaults={"source": source, "weight": weight},
                 )
-                s_interest.tweets.add(tweet)
-            tweet.used_in_calc = True
-            tweet.save()
+                for t in tweet_candidates.filter(full_text__icontains=keyword):
+                    s_interest.tweets.add(t)
+        tweet_candidates.update(used_in_calc=True)
+
 
     if source == ShortTermInterest.SCHOLAR:
-        for paper in Paper.objects.filter(user_id=user_id, used_in_calc=False):
-            print(f"Extracting keywords from paper id {paper.id}")
+        paper_candidates = Paper.objects.filter(user_id=user_id, used_in_calc=False)
+        year_wise_text = {}
+        for paper in paper_candidates:
+            if paper.year not in year_wise_text:
+                year_wise_text[paper.year] = ""
+            year_wise_text[paper.year] = f"{year_wise_text[paper.year]} {paper.title} {paper.abstract}"
+
+        for year, text in year_wise_text.items():
             try:
-                keywords = getKeyword(paper.abstract or "", model="SingleRank", num=20)
+                keywords = getKeyword(text, model="SingleRank", num=20)
             except:
                 # silencing errors like
                 # interests/Keyword_Extractor/utils/datarepresentation.py:106: RuntimeWarning: Mean of empty slice
@@ -144,7 +162,6 @@ def generate_short_term_model(user_id, source):
             if not len(keywords.keys()):
                 print("No keywords found")
                 continue
-
             wiki_keyword_redirect_mapping, keyword_weight_mapping = wikifilter(keywords)
             if not len(keyword_weight_mapping.keys()):
                 print("No keywords found in weight mapping")
@@ -173,13 +190,12 @@ def generate_short_term_model(user_id, source):
                     user_id=user_id,
                     keyword=keyword_instance,
                     model_month=1,
-                    model_year=paper.year,
+                    model_year=year,
                     defaults={"source": source, "weight": weight},
                 )
-                s_interest.papers.add(paper)
-
-            paper.used_in_calc = True
-            paper.save()
+                for p in paper_candidates.filter(Q(title__icontains=keyword) | Q(abstract__icontains=keyword)):
+                    s_interest.papers.add(p)
+        paper_candidates.update(used_in_calc=True)
 
 
 def get_interest_similarity_score(
@@ -190,18 +206,94 @@ def get_interest_similarity_score(
     else:
         return wikisim(keyword_list_1, keyword_list_2)
 
+def cosine_sim(vecA, vecB):
+    """Find the cosine similarity distance between two vectors."""
+    csim = np.dot(vecA, vecB) / (np.linalg.norm(vecA) * np.linalg.norm(vecB))
+    if np.isnan(np.sum(csim)):
+        return 0
+    return csim
+
+
+def get_radar_similarity_data(user_1_interests, user_2_interests):
+    from interests.Semantic_Similarity.Word_Embedding.IMsim import glove_model
+    vector_space = list(set(user_1_interests.keys()).union(set(user_2_interests.keys())))
+    user_1_data = {}
+    user_2_data = {}
+    get_vector = lambda x: glove_model[x]
+    for keyword in vector_space:
+        # user 1
+        weight = user_1_interests.get(keyword, 0)
+        if not weight:
+            for user_1_interest in user_1_interests:
+                try:
+                    keyword_vector = 0
+                    keyword_phrases = keyword.split()
+                    if len(keyword_phrases) > 1:
+                        for phrase in keyword_phrases:
+                            keyword_vector += get_vector(phrase)
+                        keyword_vector /= len(keyword_phrases)
+                    else:
+                        keyword_vector = get_vector(keyword)
+
+                    user_interest_vector = 0
+                    interest_phrases = user_1_interest.split()
+                    if len(interest_phrases) > 1:
+                        for phrase in interest_phrases:
+                            user_interest_vector += get_vector(phrase)
+                        user_interest_vector /= len(interest_phrases)
+                    else:
+                        keyword_vector = get_vector(user_1_interest)
+
+
+                    weight += cosine_sim(keyword_vector, user_interest_vector)
+                except:
+                    pass
+        user_1_data[keyword] = max(weight, 1)
+
+        # user 2
+        weight = user_2_interests.get(keyword, 0)
+        if not weight:
+            for user_2_interest in user_2_interests:
+                try:
+                    keyword_vector = 0
+                    keyword_phrases = keyword.split()
+                    if len(keyword_phrases) > 1:
+                        for phrase in keyword_phrases:
+                            keyword_vector += get_vector(phrase)
+                        keyword_vector /= len(keyword_phrases)
+                    else:
+                        keyword_vector = get_vector(keyword)
+
+                    user_interest_vector = 0
+                    interest_phrases = user_2_interest.split()
+                    if len(interest_phrases) > 1:
+                        for phrase in interest_phrases:
+                            user_interest_vector += get_vector(phrase)
+                        user_interest_vector /= len(interest_phrases)
+                    else:
+                        keyword_vector = get_vector(user_2_interest)
+
+                    weight += cosine_sim(keyword_vector, user_interest_vector)
+                except:
+                    pass
+        user_2_data[keyword] = max(weight, 1)
+    return {
+        "user_1_data": user_1_data,
+        "user_2_data": user_2_data,
+    }
+
 
 def get_top_short_term_interest_by_weight(user_id, count=10):
     paper_weight = 0.6
     paper_limit = int(count * paper_weight)
     tweet_limit = count - paper_limit
-    today = datetime.date.today()
+
     date_filtered_qs = (
         ShortTermInterest.objects.filter(
-            user_id=user_id, model_month=today.month, model_year=today.year
+            user_id=user_id
         )
         .prefetch_related("tweets", "papers", "keyword")
-        .order_by("-weight")
+        .order_by("-model_year", "-model_month", "-weight")
     )
     tweet_model_ids = set(
         date_filtered_qs.filter(source=ShortTermInterest.TWITTER).values_list(

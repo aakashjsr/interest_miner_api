@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('trigger-data-updata/', views.TriggerDataUpdate.as_view()),
     path('long-term/', views.LongTermInterestView.as_view()),
     path('long-term/<int:pk>/', views.LongTermInterestItemView.as_view()),
     path('papers/', views.PaperView.as_view()),
