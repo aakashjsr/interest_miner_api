@@ -23,6 +23,7 @@ from six import string_types
 from builtins import str
 
 nltk.download('stopwords')
+nltk.download('punkt')
 
 ISO_to_language = {
     'en': 'english',

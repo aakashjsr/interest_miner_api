@@ -62,7 +62,7 @@ def getKeyword(text, model, num=10):
         extractor.load_document(input=text, language='en')
         extractor.candidate_selection(grammar=grammar)
         extractor.candidate_weighting(
-            window=10, pos=pos, lda_model='./models/lda-1000-semeval2010.py3.pickle.gz'
+            window=10, pos=pos
         )
         keyphrases = extractor.get_n_best(n=num)
 
