@@ -1,5 +1,4 @@
 import requests
-from retrying import retry
 from langdetect import detect
 
 

@@ -58,34 +58,11 @@ def import_tweets():
 )
 def import_papers():
     for user in User.objects.exclude(author_id=None):
-        current_year = datetime.datetime.now().year
-        api = SemanticScholarAPI()
-
-        papers = api.get_user_papers(user, current_year - 5, current_year)
-        if not papers:
-            continue
-
-        for item in papers:
-            Paper.objects.update_or_create(
-                user=user,
-                paper_id=item.get("paperId", ""),
-                defaults={
-                    "title": item.get("title", ""),
-                    "url": item.get("url", ""),
-                    "year": item.get("year"),
-                    "abstract": item.get("abstract"),
-                },
-            )
-        print("Papers import completed for {}".format(user.username))
+        __import_papers_for_user(user.id)
 
 
-@task(
-    name="import_tweets_for_user",
-    base=BaseCeleryTask,
-    autoretry_for=(tweepy.RateLimitError,),
-    retry_kwargs={'max_retries': 5, 'countdown': 30 * 60},
-)
-def import_tweets_for_user(user_id):
+
+def __import_tweets_for_user(user_id):
     user = User.objects.get(id=user_id)
     if not user.twitter_account_id:
         return
@@ -112,14 +89,18 @@ def import_tweets_for_user(user_id):
     Tweet.objects.bulk_create(tweet_objects)
     print("Tweets import completed for {}".format(user.username))
 
-
 @task(
-    name="import_papers_for_user",
+    name="import_tweets_for_user",
     base=BaseCeleryTask,
-    autoretry_for=(Exception,),
+    autoretry_for=(tweepy.RateLimitError,),
     retry_kwargs={'max_retries': 5, 'countdown': 30 * 60},
 )
-def import_papers_for_user(user_id):
+def import_tweets_for_user(user_id):
+    __import_tweets_for_user(user_id)
+
+
+
+def __import_papers_for_user(user_id):
     user = User.objects.get(id=user_id)
     if not user.author_id:
         return
@@ -137,9 +118,20 @@ def import_papers_for_user(user_id):
                 "url": item.get("url", ""),
                 "year": item.get("year"),
                 "abstract": item.get("abstract"),
+                "authors": ','.join(list(map(lambda p: p['name'], item.get("authors", []))))
             },
         )
     print("Papers import completed for {}".format(user.username))
+
+
+@task(
+    name="import_papers_for_user",
+    base=BaseCeleryTask,
+    autoretry_for=(Exception,),
+    retry_kwargs={'max_retries': 5, 'countdown': 30 * 60},
+)
+def import_papers_for_user(user_id):
+    __import_papers_for_user(user_id)
 
 
 @task(
@@ -167,6 +159,13 @@ def update_long_term_interest_model():
         generate_long_term_model(user.id)
 
 
+def __update_short_term_interest_model_for_user(user_id):
+    user = User.objects.get(id=user_id)
+    if user.twitter_account_id:
+        generate_short_term_model(user.id, ShortTermInterest.TWITTER)
+    if user.author_id:
+        generate_short_term_model(user.id, ShortTermInterest.SCHOLAR)
+
 @task(
     name="update_short_term_interest_model_for_user",
     base=BaseCeleryTask,
@@ -174,11 +173,7 @@ def update_long_term_interest_model():
     retry_kwargs={'max_retries': 5, 'countdown': 30 * 60},
 )
 def update_short_term_interest_model_for_user(user_id):
-    user = User.objects.get(id=user_id)
-    if user.twitter_account_id:
-        generate_short_term_model(user.id, ShortTermInterest.TWITTER)
-    if user.author_id:
-        generate_short_term_model(user.id, ShortTermInterest.SCHOLAR)
+    __update_short_term_interest_model_for_user(user_id)
 
 
 @task(
@@ -199,13 +194,13 @@ def update_long_term_interest_model_for_user(user_id):
 )
 def import_user_data(user_id):
     print("importing tweets")
-    import_tweets_for_user(user_id)
+    __import_tweets_for_user(user_id)
 
     print("importing papers")
-    import_papers_for_user(user_id)
+    __import_papers_for_user(user_id)
 
     print("compute short term model")
-    update_short_term_interest_model_for_user(user_id)
+    __update_short_term_interest_model_for_user(user_id)
 
     print("compute long term model")
-    update_long_term_interest_model_for_user(user_id)
+    generate_long_term_model(user_id)

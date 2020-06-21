@@ -295,36 +295,26 @@ def get_top_short_term_interest_by_weight(user_id, count=10):
         .prefetch_related("tweets", "papers", "keyword")
         .order_by("-model_year", "-model_month", "-weight")
     )
-    tweet_model_ids = set(
-        date_filtered_qs.filter(source=ShortTermInterest.TWITTER).values_list(
-            "id", flat=True
-        )
-    )
-    paper_model_ids = set(
-        date_filtered_qs.filter(source=ShortTermInterest.SCHOLAR).values_list(
-            "id", flat=True
-        )
-    )
-    final_model_ids = set()
-    final_model_ids = final_model_ids.union(
-        set(list(paper_model_ids)[:paper_limit])
-    ).union(set(list(tweet_model_ids)[:tweet_limit]))
 
-    if len(final_model_ids) < count:
-        # Add more papers
-        new_paper_ids = list(paper_model_ids.difference(final_model_ids))
-        final_model_ids = final_model_ids.union(
-            set(new_paper_ids[: count - len(final_model_ids)])
-        )
+    keyword_id_map = {}
 
-    if len(final_model_ids) < count:
-        # Add more tweets
-        new_tweet_ids = list(tweet_model_ids.difference(final_model_ids))
-        final_model_ids = final_model_ids.union(
-            set(new_tweet_ids[: count - len(final_model_ids)])
-        )
+    tweet_based_model_count = 0
+    for t_model in date_filtered_qs.filter(source=ShortTermInterest.TWITTER):
+        if t_model.keword.name not in keyword_id_map:
+            keyword_id_map[t_model.keword.name] = t_model.id
+            tweet_based_model_count += 1
+        if tweet_based_model_count >= tweet_limit:
+            break
 
-    return date_filtered_qs.filter(id__in=final_model_ids)
+    paper_based_model_count = 0
+    for p_model in date_filtered_qs.filter(source=ShortTermInterest.SCHOLAR):
+        if p_model.keword.name not in keyword_id_map:
+            keyword_id_map[p_model.keword.name] = p_model.id
+            paper_based_model_count += 1
+        if paper_based_model_count >= paper_limit:
+            break
+
+    return date_filtered_qs.filter(id__in=list(keyword_id_map.values()))
 
 def get_top_long_term_interest_by_weight(user_id, count=10):
     paper_weight = 0.6
@@ -362,6 +352,8 @@ def get_top_long_term_interest_by_weight(user_id, count=10):
         final_model_ids = final_model_ids.union(
             set(new_tweet_ids[: count - len(final_model_ids)])
         )
+
+    # add manual keyword
 
     return date_filtered_qs.filter(id__in=final_model_ids)
 

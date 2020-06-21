@@ -89,7 +89,7 @@ class PaperView(ListCreateAPIView):
 
     def get_queryset(self):
         # return self.request.user.papers.filter(paper_id="manual")
-        return self.request.user.papers.all()
+        return self.request.user.papers.all().order_by("-year")
 
     def post(self, request, *args, **kwargs):
         request_data = self.request.data

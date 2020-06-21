@@ -16,6 +16,7 @@ class Paper(models.Model):
     user = models.ForeignKey(User, related_name="papers", on_delete=models.CASCADE)
     paper_id = models.CharField(max_length=255, null=True, blank=True, default="manual")
     title = models.CharField(max_length=2048, null=True, blank=True)
+    authors = models.CharField(max_length=2048, null=True, blank=True)
     url = models.CharField(max_length=1024, null=True, blank=True)
     year = models.IntegerField()
     abstract = models.TextField(null=True, blank=True, default='')

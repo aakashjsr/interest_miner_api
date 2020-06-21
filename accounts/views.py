@@ -8,6 +8,7 @@ from django.db.models import Q
 
 from . import serializers as accounts_serializers
 from . import models as accounts_models
+from .utils import import_in_process_for_user
 
 from interests.tasks import import_user_data
 
@@ -42,10 +43,18 @@ class LoginView(APIView):
                 token, _ = Token.objects.get_or_create(user=user)
                 response = accounts_serializers.UserSerializer(user).data
                 response["token"] = token.key
+                response["data_being_loaded"] = import_in_process_for_user(user.id)
                 return Response(response)
         return Response(
             {"detail": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class DataLoadStatusView(APIView):
+    def get(self, request, *args, **kwargs):
+        return Response({
+            "data_being_loaded": import_in_process_for_user(request.user.id)
+        })
 
 
 class LogoutView(APIView):
