@@ -12,6 +12,7 @@ from celery.decorators import task
 from common.config import BaseCeleryTask
 
 from .twitter_utils import TwitterAPI
+from .tweet_preprocessing import TwitterPreprocessor
 from .semantic_scholar import SemanticScholarAPI
 
 utc = pytz.timezone('UTC')
@@ -77,10 +78,11 @@ def __import_tweets_for_user(user_id):
 
     tweet_objects = []
     for item in tweets:
+        full_text = TwitterPreprocessor(item.get("full_text", "")).fully_preprocess()
         tweet_objects.append(
             Tweet(
                 id_str=item.get("id_str", ""),
-                full_text=item.get("full_text", ""),
+                full_text=full_text,
                 entities=json.dumps(item.get("entities", {})),
                 created_at=parser.parse(item["created_at"]),
                 user=user,
