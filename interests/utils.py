@@ -354,7 +354,7 @@ def get_top_long_term_interest_by_weight(user_id, count=10):
         )
 
     # add manual keyword
-    final_model_ids.union(set(list(date_filtered_qs.filter(source=LongTermInterest.MANUAL).values_list("id", flat=True))))
+    final_model_ids = final_model_ids.union(set(list(date_filtered_qs.filter(source=LongTermInterest.MANUAL).values_list("id", flat=True))))
 
     return date_filtered_qs.filter(id__in=final_model_ids)
 
