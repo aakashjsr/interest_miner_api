@@ -78,7 +78,7 @@ def __import_tweets_for_user(user_id):
 
     tweet_objects = []
     for item in tweets:
-        full_text = TwitterPreprocessor(item.get("full_text", "")).fully_preprocess()
+        full_text = TwitterPreprocessor(item.get("full_text", "")).fully_preprocess().text
         tweet_objects.append(
             Tweet(
                 id_str=item.get("id_str", ""),

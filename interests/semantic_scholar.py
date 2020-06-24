@@ -64,24 +64,6 @@ class SemanticScholarAPI:
 
         return data
 
-    def get_paper(self, author_id, year):
-        author = self.author(author_id)
-        paper = author["papers"]
-        collected_papers = []
-        for p in paper:
-            if p["year"] == year:
-                a = self.paper(p["paperId"])["abstract"]
-                #             print(a)
-                try:
-                    lan = detect(a)
-                    #                 print(lan)
-                    if lan == 'en':
-                        p["abstract"] = a
-                        collected_papers.append(p)
-                except TypeError:
-                    collected_papers.append(p)
-        print(collected_papers)
-        return collected_papers
 
     def get_user_papers(self, user, start_year, end_year):
         if not user.author_id:
@@ -91,8 +73,12 @@ class SemanticScholarAPI:
         papers = author["papers"]
         collectedpapers = []
         for paper in papers:
+            if not paper["year"]:
+                continue
             if start_year <= paper["year"] <= end_year:
-                abstract = self.paper(paper["paperId"])["abstract"]
+                paper_api_response = self.paper(paper["paperId"])
+                abstract = paper_api_response.get("abstract", "")
+                paper["authors"] = paper_api_response.get("authors", [])
                 try:
                     lan = detect(abstract)
                     if lan == 'en':
