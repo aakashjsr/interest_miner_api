@@ -213,6 +213,46 @@ def cosine_sim(vecA, vecB):
         return 0
     return csim
 
+def get_heat_map_data(user_1_interests, user_2_interests):
+    data = {}
+    for u_1_interest in user_1_interests:
+        data[user_1_interests] = {}
+        for u_2_interest in user_2_interests:
+            data[u_1_interest][u_2_interest] = get_interest_similarity_score([u_1_interest], [u_2_interest])
+    return data
+
+
+def get_venn_chart_data(user_1_interests, user_2_interests):
+    heat_map_data = get_heat_map_data(user_1_interests, user_2_interests)
+    similarity_threshold = 0.7
+    exclusive_user_1_interests = set(user_1_interests)
+    exclusive_user_2_interests = set(user_2_interests)
+    similar_interests = {"user_1": {}, "user_2": {}}
+
+
+    for user_1_interest, user_2_interest_set in heat_map_data.items():
+        for user_2_interest, sim_score in user_2_interest_set.items():
+            if sim_score >= similarity_threshold:
+                if user_1_interest in exclusive_user_1_interests:
+                    exclusive_user_1_interests.remove(user_1_interest)
+                if user_2_interest in exclusive_user_2_interests:
+                    exclusive_user_2_interests.remove(user_2_interest)
+
+                if user_1_interest not in similar_interests["user_1"]:
+                    similar_interests["user_1"][user_1_interest] = []
+
+                if user_2_interest not in similar_interests["user_2"]:
+                    similar_interests["user_2"][user_2_interest] = []
+
+                similar_interests["user_1"][user_1_interest].append(user_2_interest)
+                similar_interests["user_2"][user_2_interest].append(user_1_interest)
+    return {
+        "user_1_exclusive_interest": list(exclusive_user_1_interests),
+        "user_2_exclusive_interest": list(exclusive_user_2_interests),
+        "similar_interests": similar_interests
+    }
+
+
 
 def get_radar_similarity_data(user_1_interests, user_2_interests):
     from interests.Semantic_Similarity.Word_Embedding.IMsim import glove_model

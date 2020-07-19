@@ -34,7 +34,7 @@ from .models import (
     LongTermInterest,
 )
 from accounts.models import User
-from .utils import get_interest_similarity_score, get_top_long_term_interest_by_weight, get_top_short_term_interest_by_weight, get_radar_similarity_data
+from .utils import get_interest_similarity_score, get_top_long_term_interest_by_weight, get_top_short_term_interest_by_weight, get_radar_similarity_data, get_heat_map_data, get_venn_chart_data
 from interests.tasks import import_user_data
 
 class TriggerDataUpdate(APIView):
@@ -139,9 +139,14 @@ class SimilarityView(RetrieveAPIView):
         user_1_interests = {item.keyword.name: item.weight for item in LongTermInterest.objects.filter(user=request.user).order_by("-weight")[:5]}
         user_2_interests = {item.keyword.name: item.weight for item in LongTermInterest.objects.filter(user=user).order_by("-weight")[:5]}
 
-        data = get_radar_similarity_data(user_1_interests, user_2_interests)
+        radar_chart_data = get_radar_similarity_data(user_1_interests, user_2_interests)
 
-        return Response({"score": score, "user_1_data": data["user_1_data"], "user_2_data": data["user_2_data"]})
+        return Response({
+            "score": score,
+            "bar_chart_data": {"user_1_data": radar_chart_data["user_1_data"], "user_2_data": radar_chart_data["user_2_data"]},
+            "heat_map_data": get_heat_map_data(user_1_interests.keys(), user_2_interests.keys()),
+            "venn_chart_data": get_venn_chart_data(user_1_interests.keys(), user_2_interests.keys())
+       })
 
 
 class PublicInterestExtractionView(GenericAPIView):
