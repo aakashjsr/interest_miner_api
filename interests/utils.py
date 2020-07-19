@@ -216,7 +216,7 @@ def cosine_sim(vecA, vecB):
 def get_heat_map_data(user_1_interests, user_2_interests):
     data = {}
     for u_1_interest in user_1_interests:
-        data[user_1_interests] = {}
+        data[u_1_interest] = {}
         for u_2_interest in user_2_interests:
             data[u_1_interest][u_2_interest] = get_interest_similarity_score([u_1_interest], [u_2_interest])
     return data
