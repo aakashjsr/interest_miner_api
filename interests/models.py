@@ -41,6 +41,7 @@ class Tweet(models.Model):
 
 class Keyword(models.Model):
     name = models.CharField(max_length=1024)
+    original_keyword_name = models.CharField(max_length=1024)
     categories = models.ManyToManyField(Category, related_name="keywords")
 
     updated_on = models.DateTimeField(auto_now=True)

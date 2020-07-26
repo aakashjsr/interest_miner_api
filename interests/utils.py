@@ -113,7 +113,8 @@ def generate_short_term_model(user_id, source):
                 continue
             keywords = normalize(keyword_weight_mapping)
             for keyword, weight in keywords.items():
-                # keyword = wiki_keyword_redirect_mapping.get(keyword, keyword)
+                original_keyword_name = keyword
+                keyword = wiki_keyword_redirect_mapping.get(keyword, keyword)
                 keyword = keyword.lower()
                 if keyword in blacklisted_keywords:
                     print("Skipping {} as its blacklisted".format(keyword))
@@ -130,6 +131,8 @@ def generate_short_term_model(user_id, source):
                         )
                         keyword_instance.categories.add(category_instance)
                     keyword_instance.save()
+                keyword_instance.original_keyword_name = original_keyword_name.lower()
+                keyword_instance.save()
 
                 s_interest, _ = ShortTermInterest.objects.update_or_create(
                     user_id=user_id,
@@ -168,7 +171,8 @@ def generate_short_term_model(user_id, source):
                 continue
             keywords = normalize(keyword_weight_mapping)
             for keyword, weight in keywords.items():
-                # keyword = wiki_keyword_redirect_mapping.get(keyword, keyword)
+                original_keyword_name = keyword
+                keyword = wiki_keyword_redirect_mapping.get(keyword, keyword)
                 keyword = keyword.lower()
                 if keyword in blacklisted_keywords:
                     print("Skipping {} as its blacklisted".format(keyword))
@@ -185,6 +189,8 @@ def generate_short_term_model(user_id, source):
                         )
                         keyword_instance.categories.add(category_instance)
                     keyword_instance.save()
+                keyword_instance.original_keyword_name = original_keyword_name.lower()
+                keyword_instance.save()
 
                 s_interest, _ = ShortTermInterest.objects.update_or_create(
                     user_id=user_id,
