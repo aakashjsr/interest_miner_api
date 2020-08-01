@@ -360,6 +360,16 @@ def get_top_short_term_interest_by_weight(user_id, count=10):
         if paper_based_model_count >= paper_limit:
             break
 
+    current_keywords_count = len(keyword_id_map.keys())
+    if current_keywords_count < count:
+        for m in date_filtered_qs.exclude(id__in=list(keyword_id_map.values())):
+            if m.keyword.name not in keyword_id_map:
+                keyword_id_map[m.keyword.name] = m.id
+                current_keywords_count += 1
+
+            if current_keywords_count >= count:
+                break
+
     return date_filtered_qs.filter(id__in=list(keyword_id_map.values()))
 
 def get_top_long_term_interest_by_weight(user_id, count=10):
