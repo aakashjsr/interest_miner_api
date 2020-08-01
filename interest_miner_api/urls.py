@@ -20,6 +20,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
 from .api_doc_patterns import doc_patterns
+from common.views import clear_all_app_data
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -35,6 +36,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('reset-app-data/', clear_all_app_data),
     path('api/accounts/', include('accounts.urls')),
     path('api/interests/', include('interests.urls')),
     path(
