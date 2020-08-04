@@ -113,8 +113,7 @@ def generate_short_term_model(user_id, source):
                 continue
             keywords = normalize(keyword_weight_mapping)
             for keyword, weight in keywords.items():
-                original_keyword_name = keyword
-                keyword = wiki_keyword_redirect_mapping.get(keyword, keyword)
+                original_keyword_name = wiki_keyword_redirect_mapping.get(keyword, keyword)
                 keyword = keyword.lower()
                 if keyword in blacklisted_keywords:
                     print("Skipping {} as its blacklisted".format(keyword))
@@ -171,8 +170,7 @@ def generate_short_term_model(user_id, source):
                 continue
             keywords = normalize(keyword_weight_mapping)
             for keyword, weight in keywords.items():
-                original_keyword_name = keyword
-                keyword = wiki_keyword_redirect_mapping.get(keyword, keyword)
+                original_keyword_name = wiki_keyword_redirect_mapping.get(keyword, keyword)
                 keyword = keyword.lower()
                 if keyword in blacklisted_keywords:
                     print("Skipping {} as its blacklisted".format(keyword))
