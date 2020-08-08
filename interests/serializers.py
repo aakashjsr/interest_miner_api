@@ -1,3 +1,4 @@
+import json
 from .models import (
     Paper,
     Keyword,
@@ -43,6 +44,7 @@ class BlacklistedKeywordSerializer(serializers.ModelSerializer):
 class ShortTermInterestSerializer(serializers.ModelSerializer):
     keyword = serializers.SerializerMethodField()
     original_keyword = serializers.SerializerMethodField()
+    original_keywords = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
     paper_db_ids = serializers.SerializerMethodField()
     tweet_ids = serializers.SerializerMethodField()
@@ -64,6 +66,13 @@ class ShortTermInterestSerializer(serializers.ModelSerializer):
     def get_original_keyword(self, instance):
         return instance.keyword.original_keyword_name
 
+    def get_original_keywords(self, instance):
+        try:
+            original_keywords = json.loads(instance.keyword.original_keywords)
+        except:
+            original_keywords = []
+        return original_keywords
+
     class Meta:
         model = ShortTermInterest
         fields = "__all__"
@@ -72,6 +81,7 @@ class ShortTermInterestSerializer(serializers.ModelSerializer):
 class LongTermInterestSerializer(serializers.ModelSerializer):
     keyword = serializers.SerializerMethodField()
     original_keyword = serializers.SerializerMethodField()
+    original_keywords = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
     tweet_ids = serializers.SerializerMethodField()
     papers = PaperSerializer(many=True)
@@ -89,6 +99,13 @@ class LongTermInterestSerializer(serializers.ModelSerializer):
 
     def get_original_keyword(self, instance):
         return instance.keyword.original_keyword_name
+
+    def get_original_keywords(self, instance):
+        try:
+            original_keywords = json.loads(instance.keyword.original_keywords)
+        except:
+            original_keywords = []
+        return original_keywords
 
     class Meta:
         model = LongTermInterest

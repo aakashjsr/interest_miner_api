@@ -1,4 +1,4 @@
-import datetime
+import json
 
 from django.db.models import Q
 from interests.models import (
@@ -130,7 +130,12 @@ def generate_short_term_model(user_id, source):
                         )
                         keyword_instance.categories.add(category_instance)
                     keyword_instance.save()
-                keyword_instance.original_keyword_name = original_keyword_name.lower()
+                try:
+                    original_keywords = json.loads(keyword_instance.original_keywords)
+                except:
+                    original_keywords = []
+                original_keywords.append(original_keyword_name.lower())
+                keyword_instance.original_keywords = json.dumps(list(set(original_keywords)))
                 keyword_instance.save()
 
                 s_interest, _ = ShortTermInterest.objects.update_or_create(
@@ -187,7 +192,13 @@ def generate_short_term_model(user_id, source):
                         )
                         keyword_instance.categories.add(category_instance)
                     keyword_instance.save()
-                keyword_instance.original_keyword_name = original_keyword_name.lower()
+                try:
+                    original_keywords = json.loads(keyword_instance.original_keywords)
+                except:
+                    original_keywords = []
+                original_keywords.append(original_keyword_name.lower())
+                keyword_instance.original_keywords = json.dumps(list(set(original_keywords)))
+
                 keyword_instance.save()
 
                 s_interest, _ = ShortTermInterest.objects.update_or_create(
