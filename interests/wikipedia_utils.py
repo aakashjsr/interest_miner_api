@@ -9,40 +9,50 @@ from pattern.text.en import singularize
 def wikifilter(keyword):
     wiki_wiki = wikipediaapi.Wikipedia('en')
     candidate = {}
+    final = {}
+    redirect = {}
+    relation = {}
+    
+    
     for key in keyword.keys():
         page_py = wiki_wiki.page(key)
         if page_py.exists() == True:
-            candidate[key] = keyword[key]
+            query = requests.get(r'https://en.wikipedia.org/w/api.php?action=query&titles={}&&redirects&format=json'.format(key))
+            data = json.loads(query.text)
+            PAGES = data["query"]["pages"]
+            #print(PAGES)
+            for v in PAGES.values():
+                redirect[key]= v["title"]
+                #print(redirect)
+                temp_list = relation.get(v["title"], [])
+                temp_list.append(key)
+                relation[v["title"]] = temp_list
+                #print(relation)
+                final[v["title"]]=0  
+            
         elif page_py.exists() == False:
             singles = singularize(key)
             page_py = wiki_wiki.page(singles)
             if page_py.exists() == True:
-                candidate[singles] = keyword[key]
-    #     print(candidate)
+                query = requests.get(r'https://en.wikipedia.org/w/api.php?action=query&titles={}&&redirects&format=json'.format(singles))
+                data = json.loads(query.text)
+                PAGES = data["query"]["pages"]
+                #print(PAGES)
+                for v in PAGES.values():
+                    redirect[key]= v["title"]
+                    #print(redirect)
+                    temp_list = relation.get(v["title"], [])
+                    temp_list.append(key)
+                    relation[v["title"]] = temp_list
+                   # print(relation)
+                    final[v["title"]]=0
 
-    final = {}
-    redirect = {}
-    relation = {}
-
-    for ca in candidate:
-        query = requests.get(
-            r'https://en.wikipedia.org/w/api.php?action=query&titles={}&&redirects&format=json'.format(
-                ca
-            )
-        )
-        data = json.loads(query.text)
-        PAGES = data["query"]["pages"]
-        for v in PAGES.values():
-            redirect[ca] = v["title"]
-            relation[v["title"]] = ca
-            final[v["title"]] = 0
-
-    for ca in redirect.keys():
-        final[redirect[ca]] = candidate[ca]
-    #     print(final)
-
+    for k in redirect.keys():
+        final[redirect[k]]=  final[redirect[k]]+keyword[k]
+#     print(final)
+    
+    
     return relation, final
-
 
 def wikicategory(interest):
     symbols = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')', ',']
