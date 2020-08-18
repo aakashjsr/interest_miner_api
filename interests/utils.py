@@ -113,7 +113,7 @@ def generate_short_term_model(user_id, source):
                 continue
             keywords = normalize(keyword_weight_mapping)
             for keyword, weight in keywords.items():
-                original_keyword_name = wiki_keyword_redirect_mapping.get(keyword, keyword)
+                original_keywords_list = wiki_keyword_redirect_mapping.get(keyword, [keyword])
                 keyword = keyword.lower()
                 if keyword in blacklisted_keywords:
                     print("Skipping {} as its blacklisted".format(keyword))
@@ -134,7 +134,7 @@ def generate_short_term_model(user_id, source):
                     original_keywords = json.loads(keyword_instance.original_keywords)
                 except:
                     original_keywords = []
-                original_keywords.append(original_keyword_name.lower())
+                original_keywords += original_keywords_list
                 keyword_instance.original_keywords = json.dumps(list(set(original_keywords)))
                 keyword_instance.save()
 
@@ -175,7 +175,7 @@ def generate_short_term_model(user_id, source):
                 continue
             keywords = normalize(keyword_weight_mapping)
             for keyword, weight in keywords.items():
-                original_keyword_name = wiki_keyword_redirect_mapping.get(keyword, keyword)
+                original_keywords_list = wiki_keyword_redirect_mapping.get(keyword, [keyword])
                 keyword = keyword.lower()
                 if keyword in blacklisted_keywords:
                     print("Skipping {} as its blacklisted".format(keyword))
@@ -196,7 +196,7 @@ def generate_short_term_model(user_id, source):
                     original_keywords = json.loads(keyword_instance.original_keywords)
                 except:
                     original_keywords = []
-                original_keywords.append(original_keyword_name.lower())
+                original_keywords += original_keywords_list
                 keyword_instance.original_keywords = json.dumps(list(set(original_keywords)))
 
                 keyword_instance.save()
